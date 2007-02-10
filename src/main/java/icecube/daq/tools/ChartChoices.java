@@ -12,8 +12,9 @@ public class ChartChoices
     public static final int SHOW_SCALED = 4;
     public static final int SHOW_DELTA = 5;
 
-    private boolean showPoints;
     private boolean filterBoring;
+    private boolean hideLegends;
+    private boolean showPoints;
     private int type = SHOW_ALL;
     private HashMap sectionMap = new HashMap();
 
@@ -70,8 +71,9 @@ public class ChartChoices
 
     public void dump()
     {
-        System.out.println((showPoints ? "" : "!") + "showPoints");
         System.out.println((filterBoring ? "" : "!") + "filterBoring");
+        System.out.println((hideLegends ? "" : "!") + "hideLegends");
+        System.out.println((showPoints ? "" : "!") + "showPoints");
 
         String showName;
         switch (type) {
@@ -118,6 +120,11 @@ public class ChartChoices
         return type;
     }
 
+    public boolean hideLegends()
+    {
+        return hideLegends;
+    }
+
     public void initialize(StatData statData)
     {
         Iterator sectIter = statData.getSections().iterator();
@@ -134,6 +141,11 @@ public class ChartChoices
     public void setFilterBoring(boolean val)
     {
         filterBoring = val;
+    }
+
+    public void setHideLegends(boolean val)
+    {
+        hideLegends = val;
     }
 
     public void setShowPoints(boolean val)

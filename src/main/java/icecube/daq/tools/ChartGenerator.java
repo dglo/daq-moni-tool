@@ -371,7 +371,9 @@ public class ChartGenerator
             title = "Combined " + title;
         }
 
-        addChart(chartName, coll, true, choices.showPoints());
+        boolean showLegend = !choices.hideLegends();
+
+        addChart(chartName, coll, showLegend, choices.showPoints());
     }
 
     private void showMultiple(StatData statData, ChartChoices choices)
@@ -421,7 +423,8 @@ public class ChartGenerator
                     coll = stat.plotDelta(section, name);
                 }
 
-                boolean showLegend = stat.showLegend();
+                boolean showLegend =
+                    stat.showLegend() && !choices.hideLegends();
 
                 if (choices.filterBoring() && !isInteresting(coll)) {
                     continue;
