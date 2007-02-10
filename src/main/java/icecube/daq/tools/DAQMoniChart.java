@@ -364,6 +364,22 @@ public class DAQMoniChart
             });
         panel.add(showPointsCkbox);
 
+        JCheckBox hideLegendsCkbox = new JCheckBox("Hide legends");
+        hideLegendsCkbox.addItemListener(new ItemListener() {
+                public void itemStateChanged(ItemEvent evt)
+                {
+                    if (evt.getStateChange() == ItemEvent.SELECTED) {
+                        chartChoices.setHideLegends(true);
+                    } else if (evt.getStateChange() == ItemEvent.DESELECTED) {
+                        chartChoices.setHideLegends(false);
+                    } else {
+                        logMessage("Unknown hideLegend event #" +
+                                   evt.getStateChange() + ": " + evt);
+                    }
+                }
+            });
+        panel.add(hideLegendsCkbox);
+
         JCheckBox filterBoringCkbox = new JCheckBox("Filter uninteresting");
         filterBoringCkbox.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent evt)
