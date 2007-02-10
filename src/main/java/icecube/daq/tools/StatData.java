@@ -744,6 +744,14 @@ class StringStat
                                      ChartTime time, String line)
         throws StatParseException
     {
+        return save(statData, null, sectionName, time, line);
+    }
+
+    public static final boolean save(StatData statData, String sectionHost,
+                                     String sectionName, ChartTime time,
+                                     String line)
+        throws StatParseException
+    {
         Matcher matcher = STAT_PAT.matcher(line);
         if (!matcher.find()) {
             return false;
@@ -757,9 +765,10 @@ class StringStat
                                          " before time was set");
         }
 
-        StatParent parent = statData.getParent(sectionName, name);
+        StatParent parent = statData.getParent(sectionHost, sectionName, name);
         if (parent == null) {
-            parent = statData.addParent(sectionName, name, new StringStat());
+            parent = statData.addParent(sectionHost, sectionName, name,
+                                        new StringStat());
         }
 
         parent.add(new StringData(time, val));
@@ -2348,7 +2357,7 @@ class PDAQParser
             return true;
         }
 
-        if (StringStat.save(statData, sectionName, time, line)) {
+        if (StringStat.save(statData, sectionHost, sectionName, time, line)) {
             return true;
         }
 
