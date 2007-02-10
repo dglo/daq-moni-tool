@@ -1743,7 +1743,7 @@ class ListStat
     extends StatParent
 {
     private static final Pattern STAT_PAT =
-        Pattern.compile("^\\s+(\\S+):?\\s+\\[(.*)\\]\\s*$");
+        Pattern.compile("^\\s+([^\\s:]+):?\\s+\\[(.*)\\]\\s*$");
 
     private int numEntries;
 
@@ -1908,23 +1908,6 @@ class ListStat
         return vals;
     }
 
-    private static final String[] getStringArray(String line, String[] valStrs)
-        throws StatParseException
-    {
-        String[] vals = new String[valStrs.length];
-        for (int i = 0; i < vals.length; i++) {
-            if (valStrs[i].charAt(0) != '\'' ||
-                valStrs[i].charAt(valStrs[i].length() - 1) != '\'')
-            {
-                throw new StatParseException("Bad string entry #" + i + " \"" +
-                                             valStrs[i] + "\" in \"" + line +
-                                             "\"");
-            }
-        }
-
-        return vals;
-    }
-
     public static final boolean save(StatData statData, String sectionHost,
                                      String sectionName, ChartTime time,
                                      String line)
@@ -1950,11 +1933,19 @@ class ListStat
                                         new ListStat(valStrs.length));
         }
 
+        // strip quote marks
+        for (int i = 0; i < valStrs.length; i++) {
+            if (valStrs[i].startsWith("'") && valStrs[i].endsWith("'")) {
+                valStrs[i] = valStrs[i].substring(1, valStrs[i].length() - 1);
+            }
+            if (valStrs[i].endsWith("L")) {
+                valStrs[i] = valStrs[i].substring(0, valStrs[i].length() - 1);
+            }
+        }
+
         ListData data;
         if (valStrs.length == 0) {
             data = new LongListData(time, new long[0]);
-        } else if (valStrs[0].charAt(0) == '\'') {
-            data = new StringListData(time, getStringArray(line, valStrs));
         } else {
             try {
                 long lVal = Long.parseLong(valStrs[0]);
@@ -1970,9 +1961,13 @@ class ListStat
                     data = new DoubleListData(time, getDoubleArray(line,
                                                                    valStrs));
                 } catch (NumberFormatException nfe) {
-                    // must not be a double value
+                    // must be a string value
                     data = null;
                 }
+            }
+
+            if (data == null) {
+                data = new StringListData(time, valStrs);
             }
         }
 
