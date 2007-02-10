@@ -429,6 +429,49 @@ public class DAQMoniChart
         return panel;
     }
 
+    private JPanel buildSectionPanel(String section)
+    {
+        List names = statData.getSectionNames(section);
+        if (names.size() <= 0) {
+            return null;
+        }
+
+        final int cols = 3;
+        final int rows = (names.size() + cols - 1) / cols;
+
+        SectionChoices sectionChoices =
+            chartChoices.getSection(section);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(new BorderLayout());
+
+        IncAllCheckBox includeAll =
+            new IncAllCheckBox("Graph all " + section + " statistics",
+                               chartChoices, sectionChoices,
+                               typeButtons);
+        panel.add(includeAll, BorderLayout.PAGE_START);
+        typeButtons.addSection(includeAll);
+
+        JPanel gridPanel = new JPanel();
+        gridPanel.setLayout(new GridLayout(rows, cols));
+
+        Iterator iter2 = names.iterator();
+        while (iter2.hasNext()) {
+            String name = (String) iter2.next();
+
+            JCheckBox ckbox =
+                new NameCheckBox(name, chartChoices, sectionChoices,
+                                 typeButtons, includeAll);
+            gridPanel.add(ckbox);
+
+            includeAll.addIndividual(ckbox);
+        }
+
+        panel.add(gridPanel, BorderLayout.CENTER);
+
+        return panel;
+    }
+
     private void loadTabbedPane()
     {
         while (tabbedPane.getTabCount() > 0) {
@@ -442,46 +485,38 @@ public class DAQMoniChart
         chartChoices.clearSections();
         chartChoices.initialize(statData);
 
+        HashMap map = new HashMap();
+
         Iterator sectIter = statData.getSections().iterator();
         while (sectIter.hasNext()) {
             String section = (String) sectIter.next();
 
-            List names = statData.getSectionNames(section);
-            if (names.size() > 0) {
-                final int cols = 3;
-                final int rows = (names.size() + cols - 1) / cols;
+            JPanel panel = buildSectionPanel(section);
+            if (panel == null) {
+                continue;
+            }
 
-                SectionChoices sectionChoices =
-                    chartChoices.getSection(section);
+            int colonIdx = section.indexOf(':');
+            if (colonIdx < 0) {
+                if (map.containsKey(section)) {
+                    System.err.println("Skipping extra entry for " + section);
+                } else {
+                    tabbedPane.addTab(section, panel);
+                }
+            } else {
+                String compName = section.substring(0, colonIdx);
+                String beanName = section.substring(colonIdx + 1);
 
-                JPanel panel = new JPanel();
-                panel.setLayout(new BorderLayout());
+                if (!map.containsKey(compName)) {
+                    JTabbedPane pane = new JTabbedPane();
 
-                IncAllCheckBox includeAll =
-                    new IncAllCheckBox("Graph all " + section + " statistics",
-                                       chartChoices, sectionChoices,
-                                       typeButtons);
-                panel.add(includeAll, BorderLayout.PAGE_START);
-                typeButtons.addSection(includeAll);
+                    tabbedPane.addTab(compName, pane);
 
-                JPanel gridPanel = new JPanel();
-                gridPanel.setLayout(new GridLayout(rows, cols));
-
-                Iterator iter2 = names.iterator();
-                while (iter2.hasNext()) {
-                    String name = (String) iter2.next();
-
-                    JCheckBox ckbox =
-                        new NameCheckBox(name, chartChoices, sectionChoices,
-                                         typeButtons, includeAll);
-                    gridPanel.add(ckbox);
-
-                    includeAll.addIndividual(ckbox);
+                    map.put(compName, pane);
                 }
 
-                panel.add(gridPanel, BorderLayout.CENTER);
-
-                tabbedPane.addTab(section, panel);
+                JTabbedPane pane = (JTabbedPane) map.get(compName);
+                pane.addTab(beanName, panel);
             }
         }
 
