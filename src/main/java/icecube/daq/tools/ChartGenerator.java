@@ -18,6 +18,7 @@ import javax.swing.JPanel;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 
+import org.jfree.chart.axis.DateAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 
@@ -64,7 +65,7 @@ public class ChartGenerator
     private void addChart(String name, TimeSeriesCollection coll,
                           boolean showLegend, boolean showPoints)
     {
-        JFreeChart chart = createTimeSeriesChart(name, "Seconds", name, coll,
+        JFreeChart chart = createTimeSeriesChart(name, "Time", name, coll,
                                                  showLegend, true, false);
         chart.setBackgroundPaint(Color.white);
 
@@ -91,10 +92,10 @@ public class ChartGenerator
                                              XYDataset dataset, boolean legend,
                                              boolean tooltips, boolean urls)
     {
-        //ValueAxis timeAxis = new DateAxis(timeAxisLabel,
-        //                                  TimeZone.getTimeZone("UTC"));
-        ValueAxis timeAxis = new SecondAxis(timeAxisLabel,
-                                            TimeZone.getTimeZone("UTC"));
+        ValueAxis timeAxis = new DateAxis(timeAxisLabel,
+                                          TimeZone.getTimeZone("UTC"));
+        //ValueAxis timeAxis = new SecondAxis(timeAxisLabel,
+        //                                    TimeZone.getTimeZone("UTC"));
         timeAxis.setLowerMargin(0.02);  // reduce the default margins
         timeAxis.setUpperMargin(0.02);
 
