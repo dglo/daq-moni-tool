@@ -45,4 +45,4 @@ if [ ! -z ${missing_jar} ]; then
   exit 1
 fi
 
-exec java -Xmx2048m icecube.daq.tools.DumpMoni $@
+exec java -Xmx2048m icecube.daq.tools.DAQMoniChart $@
