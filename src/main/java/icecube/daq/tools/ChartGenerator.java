@@ -5,66 +5,68 @@ import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.GridLayout;
 import java.awt.Shape;
+
 import java.awt.image.BufferedImage;
+
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.TimeZone;
 
 import javax.swing.JPanel;
 
-import org.apache.log4j.Logger;
-
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
+
 import org.jfree.chart.axis.DateAxis;
-import org.jfree.chart.axis.LogarithmicAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
+
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
 import org.jfree.chart.labels.XYToolTipGenerator;
+
 import org.jfree.chart.plot.XYPlot;
+
 import org.jfree.chart.renderer.xy.XYItemRenderer;
 import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+
 import org.jfree.chart.urls.StandardXYURLGenerator;
 import org.jfree.chart.urls.XYURLGenerator;
+
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 import org.jfree.data.time.TimeSeriesDataItem;
+
 import org.jfree.data.xy.XYDataset;
 
 public class ChartGenerator
 {
-    private static final Logger LOG = Logger.getLogger(ChartGenerator.class);
-
     private String title;
-    private ArrayList<JFreeChart> chartList = new ArrayList<JFreeChart>();
+    private ArrayList chartList = new ArrayList();
 
-    ChartGenerator(List<ComponentData> compList, StatData statData,
-                   ChartChoices choices)
+    ChartGenerator(StatData statData, ChartChoices choices)
     {
-        if (choices.getType() == ChartType.ALL ||
-            choices.getType() == ChartType.SELECTED ||
-            choices.getType() == ChartType.DELTA)
+        if (statData == null) {
+            // do nothing
+        } else if (choices.getType() == ChartChoices.SHOW_ALL ||
+                   choices.getType() == ChartChoices.SHOW_SELECTED ||
+                   choices.getType() == ChartChoices.SHOW_DELTA)
         {
-            showMultiple(compList, statData, choices);
-        } else if (choices.getType() == ChartType.COMBINED ||
-                   choices.getType() == ChartType.SCALED ||
-                   choices.getType() == ChartType.LOGARITHMIC)
+            showMultiple(statData, choices);
+        } else if (choices.getType() == ChartChoices.SHOW_COMBINED ||
+                   choices.getType() == ChartChoices.SHOW_SCALED)
         {
-            showCombined(compList, statData, choices);
+            showCombined(statData, choices);
         } else {
             throw new Error("Unknown chart type#" + choices.getType());
         }
     }
 
     private void addChart(String name, TimeSeriesCollection coll,
-                          boolean showLegend, boolean showPoints,
-                          ChartType type)
+                          boolean showLegend, boolean showPoints)
     {
         JFreeChart chart = createTimeSeriesChart(name, "Time", name, coll,
-                                                 showLegend, true, false,
-                                                 type);
+                                                 showLegend, true, false);
         chart.setBackgroundPaint(Color.white);
 
         if (showPoints) {
@@ -88,27 +90,17 @@ public class ChartGenerator
     private JFreeChart createTimeSeriesChart(String title, String timeAxisLabel,
                                              String valueAxisLabel,
                                              XYDataset dataset, boolean legend,
-                                             boolean tooltips, boolean urls,
-                                             ChartType type)
+                                             boolean tooltips, boolean urls)
     {
         ValueAxis timeAxis = new DateAxis(timeAxisLabel,
                                           TimeZone.getTimeZone("UTC"));
-        // reduce the default margins
-        timeAxis.setLowerMargin(0.02);
+        //ValueAxis timeAxis = new SecondAxis(timeAxisLabel,
+        //                                    TimeZone.getTimeZone("UTC"));
+        timeAxis.setLowerMargin(0.02);  // reduce the default margins
         timeAxis.setUpperMargin(0.02);
 
-        ValueAxis valueAxis;
-        if (type != ChartType.LOGARITHMIC) {
-            NumberAxis axis = new NumberAxis(valueAxisLabel);
-            // override default
-            axis.setAutoRangeIncludesZero(false);
-            valueAxis = axis;
-        } else {
-            LogarithmicAxis axis = new LogarithmicAxis(valueAxisLabel);
-            //axis.setMinorTickMarksVisible(true);
-            axis.setAutoRange(true);
-            valueAxis = axis;
-        }
+        NumberAxis valueAxis = new NumberAxis(valueAxisLabel);
+        valueAxis.setAutoRangeIncludesZero(false);  // override default
 
         XYPlot plot = new XYPlot(dataset, timeAxis, valueAxis, null);
 
@@ -160,7 +152,7 @@ public class ChartGenerator
                     break;
                 }
 
-                JFreeChart chart = chartList.get(idx);
+                JFreeChart chart = (JFreeChart) chartList.get(idx);
                 BufferedImage img =
                     chart.createBufferedImage(colWidth, rowHeight);
                 g2d.drawImage(img, c * colWidth, r * rowHeight, null);
@@ -170,42 +162,70 @@ public class ChartGenerator
         return bigImg;
     }
 
+    private String getSectionTitle(StatData statData, ChartChoices choices)
+    {
+        boolean rtnVal;
+
+        Collection sections = statData.getSections();
+        if (sections == null || sections.size() <= 1) {
+            return "No data";
+        }
+
+        String title = null;
+        Iterator iter = sections.iterator();
+        while (iter.hasNext()) {
+            String section = (String) iter.next();
+
+            SectionChoices sc = choices.getSection(section);
+            if (sc.hasGraphs()) {
+                if (title == null) {
+                    title = section;
+                } else {
+                    title = title + "+" + section;
+                }
+            }
+        }
+
+        return title;
+    }
+
     public String getTitle()
     {
         return title;
     }
 
-    private boolean hasMultipleSections(List<ComponentData> compList,
+    private boolean hasMultipleSections(StatData statData,
                                         ChartChoices choices)
     {
         boolean rtnVal;
 
-        if (compList.size() <= 1) {
+        Collection sections = statData.getSections();
+        if (sections == null || sections.size() <= 1) {
             rtnVal = false;
-        } else if (choices.getType() == ChartType.COMBINED ||
-            choices.getType() == ChartType.SCALED)
+        } else if (choices.getType() == ChartChoices.SHOW_COMBINED ||
+            choices.getType() == ChartChoices.SHOW_SCALED)
         {
             rtnVal = false;
-        } else if (choices.getType() == ChartType.ALL) {
+        } else if (choices.getType() == ChartChoices.SHOW_ALL) {
             rtnVal = true;
         } else {
             rtnVal = false;
 
             boolean foundOne = false;
 
-            for (ComponentData cd : compList) {
-                for (ComponentInstance ci : cd) {
-                    for (InstanceBean bean : ci) {
-                        if (bean.hasGraphs()) {
-                            if (foundOne) {
-                                // if we've found two sections with graphs,
-                                // we're done
-                                return true;
-                            }
+            Iterator iter = sections.iterator();
+            while (iter.hasNext()) {
+                String section = (String) iter.next();
 
-                            foundOne = true;
-                        }
+                SectionChoices sc = choices.getSection(section);
+                if (sc.hasGraphs()) {
+                    if (foundOne) {
+                        // if we've found two sections with graphs, we're done
+                        rtnVal = true;
+                        break;
                     }
+
+                    foundOne = true;
                 }
             }
         }
@@ -224,14 +244,16 @@ public class ChartGenerator
             return false;
         }
 
-        for (Object obj : coll.getSeries()) {
-            TimeSeries series = (TimeSeries) obj;
+        Iterator iter = coll.getSeries().iterator();
+        while (iter.hasNext()) {
+            TimeSeries series = (TimeSeries) iter.next();
 
             double prevVal = Double.NaN;
 
-            for (Object o2 : series.getItems()) {
+            Iterator sIt = series.getItems().iterator();
+            while (sIt.hasNext()) {
                 TimeSeriesDataItem item =
-                    (TimeSeriesDataItem) o2;
+                    (TimeSeriesDataItem) sIt.next();
 
                 double curVal = item.getValue().doubleValue();
 
@@ -266,170 +288,171 @@ public class ChartGenerator
 
         JPanel panel = new JPanel(new GridLayout(numRows, numCols));
 
-        for (JFreeChart chart : chartList) {
-            panel.add(new ChartPanel(chart));
+        Iterator iter = chartList.iterator();
+        while (iter.hasNext()) {
+            panel.add(new ChartPanel((JFreeChart) iter.next()));
         }
 
         panel.setPreferredSize(new Dimension(800, 600));
         return panel;
     }
 
-    private void showCombined(List<ComponentData> compList, StatData statData,
-                              ChartChoices choices)
+    String makeTitle(GraphSource src)
     {
-        final boolean multiSection = hasMultipleSections(compList, choices);
+        if (title == null || title.length() == 0) {
+            return src.toString();
+        }
 
-        PlotArguments pargs = new PlotArguments(compList, false);
+        return src.toString() + ": " + title;
+    }
 
-        title = pargs.getSectionTitle(compList);
+    private void showCombined(StatData statData, ChartChoices choices)
+    {
+        final boolean scale =
+            (choices.getType() == ChartChoices.SHOW_SCALED);
+
+        final boolean multiSection = hasMultipleSections(statData, choices);
+
+        title = getSectionTitle(statData, choices);
 
         TimeSeriesCollection coll = new TimeSeriesCollection();
         coll.setDomainIsPointsInTime(true);
 
-        for (ComponentData cd : compList) {
-            for (ComponentInstance ci : cd) {
-                for (InstanceBean bean : ci) {
-                    if (!bean.hasGraphs()) {
-                        continue;
-                    }
+        int numSeries = 0;
 
-                    int numCharted = 0;
-                    String chartName = null;
+        Iterator sectIter = statData.getSections().iterator();
+        while (sectIter.hasNext()) {
+            String section = (String) sectIter.next();
 
-                    for (String name : bean.graphIterable()) {
-                        StatParent stat =
-                            statData.getStatistics(bean.getSectionKey(), name);
+            SectionChoices sectionChoice = choices.getSection(section);
+            if (sectionChoice == null || !sectionChoice.hasGraphs()) {
+                continue;
+            }
 
-                        if (!multiSection) {
-                            chartName = name;
-                        }
+            int numCharted = 0;
+            String chartName = null;
 
-                        try {
-                            if (choices.getType() == ChartType.SCALED) {
-                                stat.plotScaled(coll, bean.getSectionKey(),
-                                                name, pargs);
-                            } else {
-                                stat.plot(coll, bean.getSectionKey(), name,
-                                          pargs);
-                            }
-                        } catch (StatPlotException spe) {
-                            LOG.error("Cannot plot " + bean.getSectionKey() +
-                                      ": " + name, spe);
-                            continue;
-                        }
-                        numCharted++;
-                    }
+            Iterator nameIter = statData.getSectionNames(section).iterator();
+            while (nameIter.hasNext()) {
+                String name = (String) nameIter.next();
 
-                    if (title == null) {
-                        if (!multiSection) {
-                            title = chartName;
-                        } else {
-                            title = bean.getSectionKey().toString();
-                        }
-                    }
+                if (sectionChoice != null && !sectionChoice.isChosen(name)) {
+                    continue;
+                }
+
+                StatParent stat = statData.getStatistics(section, name);
+
+                if (!multiSection) {
+                    chartName = name;
+                }
+
+                if (!scale) {
+                    stat.plot(coll, section, name, true);
+                } else {
+                    stat.plotScaled(coll, section, name);
+                }
+                numCharted++;
+            }
+
+            if (title == null) {
+                if (numCharted == 1) {
+                    title = chartName;
+                } else {
+                    title = section;
                 }
             }
         }
 
         String chartName;
-        switch (choices.getType()) {
-        case SCALED:
-            chartName = "Scaled";
+        if (scale) {
+            chartName = "Scaled Data";
             title = "Scaled " + title;
-            break;
-        case LOGARITHMIC:
-            chartName = "Logarithmic";
-            title = "Log " + title;
-            break;
-        default:
-            chartName = "Combined";
+        } else {
+            chartName = "Combined Data";
             title = "Combined " + title;
-            break;
         }
 
-        final boolean showLegend = !choices.hideLegends();
+        boolean showLegend = !choices.hideLegends();
 
-        addChart(chartName, coll, showLegend, choices.showPoints(),
-                 choices.getType());
+        addChart(chartName, coll, showLegend, choices.showPoints());
     }
 
-    private void showMultiple(List<ComponentData> compList, StatData statData,
-                              ChartChoices choices)
+    private void showMultiple(StatData statData, ChartChoices choices)
     {
-        final boolean multiSection = hasMultipleSections(compList, choices);
+        final boolean multiSection = hasMultipleSections(statData, choices);
 
-        final boolean showAll = (choices.getType() == ChartType.ALL);
+        final boolean showAll = (choices.getType() == ChartChoices.SHOW_ALL);
 
-        final boolean delta = (choices.getType() == ChartType.DELTA);
+        final boolean delta =
+            (choices.getType() == ChartChoices.SHOW_DELTA);
 
-        PlotArguments pargs = new PlotArguments(compList, false);
+        title = getSectionTitle(statData, choices);
 
-        title = pargs.getSectionTitle(compList);
+        Iterator sectIter = statData.getSections().iterator();
+        while (sectIter.hasNext()) {
+            String section = (String) sectIter.next();
 
-        for (ComponentData cd : compList) {
-            for (ComponentInstance ci : cd) {
-                for (InstanceBean bean : ci) {
-                    if (!bean.hasGraphs()) {
-                        continue;
-                    }
+            SectionChoices sectionChoice;
+            if (showAll) {
+                sectionChoice = null;
+            } else {
+                sectionChoice = choices.getSection(section);
+                if (sectionChoice == null || !sectionChoice.hasGraphs()) {
+                    continue;
+                }
+            }
 
-                    int numCharted = 0;
-                    String chartName = null;
+            int numCharted = 0;
+            String chartName = null;
 
-                    Iterable<String> iter;
-                    if (showAll || bean.isIncludeAll()) {
-                        iter = bean;
-                    } else {
-                        iter = bean.graphIterable();
-                    }
-                    for (String name : iter) {
-                        StatParent stat =
-                            statData.getStatistics(bean.getSectionKey(), name);
+            Iterator nameIter = statData.getSectionNames(section).iterator();
+            while (nameIter.hasNext()) {
+                String name = (String) nameIter.next();
 
-                        TimeSeriesCollection coll;
-                        try {
-                            if (!delta) {
-                                coll = stat.plot(bean.getSectionKey(), name,
-                                                 pargs);
-                            } else {
-                                coll = stat.plotDelta(bean.getSectionKey(),
-                                                      name, pargs);
-                            }
-                        } catch (StatPlotException spe) {
-                            LOG.error("Cannot plot " + bean.getSectionKey() +
-                                      ": " + name, spe);
-                            continue;
-                        }
+                if (!showAll && sectionChoice != null &&
+                    !sectionChoice.isChosen(name))
+                {
+                    continue;
+                }
 
-                        boolean showLegend =
-                            stat.showLegend() && !choices.hideLegends();
+                StatParent stat = statData.getStatistics(section, name);
 
-                        if (choices.filterBoring() && !isInteresting(coll)) {
-                            continue;
-                        }
+                TimeSeriesCollection coll;
+                if (!delta) {
+                    coll = stat.plot(section, name, false);
+                } else {
+                    coll = stat.plotDelta(section, name);
+                }
 
-                        String deltaStr;
-                        if (!delta) {
-                            deltaStr = "";
-                        } else {
-                            deltaStr = "Delta ";
-                        }
+                boolean showLegend =
+                    stat.showLegend() && !choices.hideLegends();
 
-                        chartName = pargs.getSeriesName(bean.getSectionKey(),
-                                                        name);
+                if (choices.filterBoring() && !isInteresting(coll)) {
+                    continue;
+                }
 
-                        addChart(chartName, coll, showLegend,
-                                 choices.showPoints(), choices.getType());
-                        numCharted++;
-                    }
+                String deltaStr;
+                if (!delta) {
+                    deltaStr = "";
+                } else {
+                    deltaStr = "Delta ";
+                }
 
-                    if (title == null) {
-                        if (numCharted == 1) {
-                            title = chartName;
-                        } else {
-                            title = bean.getSectionKey().toString();
-                        }
-                    }
+                if (multiSection && section != null) {
+                    chartName = deltaStr + section + " " + name;
+                } else {
+                    chartName = deltaStr + name;
+                }
+
+                addChart(chartName, coll, showLegend, choices.showPoints());
+                numCharted++;
+            }
+
+            if (title == null) {
+                if (numCharted == 1) {
+                    title = chartName;
+                } else {
+                    title = section;
                 }
             }
         }

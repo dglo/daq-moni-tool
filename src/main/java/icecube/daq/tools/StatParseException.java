@@ -1,7 +1,7 @@
 package icecube.daq.tools;
 
 public class StatParseException
-    extends DAQMoniToolException
+    extends Exception
 {
     StatParseException()
     {

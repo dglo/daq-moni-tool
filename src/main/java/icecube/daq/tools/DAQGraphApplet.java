@@ -1,5 +1,7 @@
 package icecube.daq.tools;
 
+import java.applet.Applet;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -25,7 +27,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
@@ -33,17 +34,17 @@ import javax.swing.JTabbedPane;
 
 import org.jfree.ui.RefineryUtilities;
 
-class TypeButtons
+class OLDTypeButtons
 {
     private JRadioButton showAllBtn;
     private JRadioButton showSelBtn;
     private ArrayList sections = new ArrayList();
 
-    TypeButtons()
+    OLDTypeButtons()
     {
     }
 
-    void addSection(IncAllCheckBox ckbox)
+    void addSection(OLDIncAllCheckBox ckbox)
     {
         sections.add(ckbox);
     }
@@ -52,7 +53,7 @@ class TypeButtons
     {
         Iterator iter = sections.iterator();
         while (iter.hasNext()) {
-            IncAllCheckBox ckbox = (IncAllCheckBox) iter.next();
+            OLDIncAllCheckBox ckbox = (OLDIncAllCheckBox) iter.next();
             ckbox.clearAll();
         }
     }
@@ -79,16 +80,17 @@ class TypeButtons
     }
 }
 
-abstract class SectionChoicesCheckBox
+abstract class OLDSectionChoicesCheckBox
     extends JCheckBox
     implements ItemListener
 {
     private ChartChoices chartChoices;
     private SectionChoices choices;
-    private TypeButtons typeButtons;
+    private OLDTypeButtons typeButtons;
 
-    SectionChoicesCheckBox(String name, ChartChoices chartChoices,
-                           SectionChoices choices, TypeButtons typeButtons)
+    OLDSectionChoicesCheckBox(String name, ChartChoices chartChoices,
+                              SectionChoices choices,
+                              OLDTypeButtons typeButtons)
     {
         super(name);
 
@@ -114,13 +116,13 @@ abstract class SectionChoicesCheckBox
     }
 }
 
-class IncAllCheckBox
-    extends SectionChoicesCheckBox
+class OLDIncAllCheckBox
+    extends OLDSectionChoicesCheckBox
 {
     ArrayList list = new ArrayList();
 
-    IncAllCheckBox(String name, ChartChoices chartChoices,
-                   SectionChoices choices, TypeButtons typeButtons)
+    OLDIncAllCheckBox(String name, ChartChoices chartChoices,
+                      SectionChoices choices, OLDTypeButtons typeButtons)
     {
         super(name, chartChoices, choices, typeButtons);
     }
@@ -161,14 +163,14 @@ class IncAllCheckBox
     }
 }
 
-class NameCheckBox
-    extends SectionChoicesCheckBox
+class OLDNameCheckBox
+    extends OLDSectionChoicesCheckBox
 {
     private JCheckBox incAllBox;
 
-    NameCheckBox(String name, ChartChoices chartChoices,
-                 SectionChoices choices, TypeButtons typeButtons,
-                 JCheckBox incAllBox)
+    OLDNameCheckBox(String name, ChartChoices chartChoices,
+                    SectionChoices choices, OLDTypeButtons typeButtons,
+                    JCheckBox incAllBox)
     {
         super(name, chartChoices, choices, typeButtons);
 
@@ -196,54 +198,69 @@ class NameCheckBox
     }
 }
 
-public class DAQMoniChart
-    extends JFrame
+public class DAQGraphApplet
+    extends Applet
 {
+    private static final String[] DATA_DIR_NAME = new String[] {
+        "/data/jacobsen/crashlogs-spts/",
+        "/tmp/",
+        "/Users/dglo/Desktop/",
+    };
+
+    private static final boolean ADD_DUMP_BUTTON = false;
+
     private ChartChoices chartChoices = new ChartChoices();
 
+    private GraphSource inputSrc;
     private StatData statData;
 
-    private TypeButtons typeButtons = new TypeButtons();
+    private OLDTypeButtons typeButtons = new OLDTypeButtons();
     private JTabbedPane tabbedPane = new JTabbedPane();
 
-    public DAQMoniChart(String[] args)
+    private Component buildMenu(Object[] dataFiles)
     {
-        for (int i = 0; i < args.length; i++) {
-            File f = new File(args[i]);
-            if (!f.exists()) {
-                System.err.println("No such file \"" + f + "\"");
-                continue;
+        JPanel panel = new JPanel();
+        panel.setLayout(new FlowLayout());
+
+        JLabel menuLabel = new JLabel("File to graph:", JLabel.TRAILING);
+        panel.add(menuLabel);
+
+        if (dataFiles.length > 1) {
+            JComboBox fileMenu = new JComboBox(dataFiles);
+            fileMenu.addItemListener(new ItemListener() {
+                    public void itemStateChanged(ItemEvent evt)
+                    {
+                        if (evt.getStateChange() == ItemEvent.SELECTED) {
+                            setChosen(new GraphSource((File) evt.getItem()));
+                        } else if (evt.getStateChange() !=
+                                   ItemEvent.DESELECTED)
+                        {
+                            logMessage("Unknown file menu event #" +
+                                       evt.getStateChange() + ": " + evt);
+                        }
+                    }
+                });
+            panel.add(fileMenu);
+
+            menuLabel.setLabelFor(fileMenu);
+
+            setChosen(new GraphSource((File) fileMenu.getSelectedItem()));
+        } else {
+            String fileStr;
+            if (dataFiles[0] instanceof URL) {
+                fileStr = new File(((URL) dataFiles[0]).getFile()).getName();
+                setChosen(new GraphSource((URL) dataFiles[0]));
+            } else {
+                fileStr = dataFiles[0].toString();
+                setChosen(new GraphSource((File) dataFiles[0]));
             }
 
-            if (statData == null) {
-                statData = new StatData();
-            }
+            JLabel fileLabel = new JLabel(fileStr, JLabel.LEADING);
+            panel.add(fileLabel);
 
-            try {
-                statData.addData(new GraphSource(f));
-            } catch (IOException ioe) {
-                System.err.println("Couldn't load \"" + f + "\":");
-                ioe.printStackTrace();
-                continue;
-            }
-
-            System.out.println(f + ":");
         }
 
-        if (statData == null) {
-            throw new Error("No data files found!");
-        }
-
-        setTitle("Monitoring Charts");
-        setLayout(new BorderLayout());
-
-        add(buildBottom(), BorderLayout.CENTER);
-        add(buildCommands(), BorderLayout.PAGE_END);
-
-        loadTabbedPane();
-
-        resize(640, 480);
-        show();
+        return panel;
     }
 
     private Component buildBottom()
@@ -364,22 +381,6 @@ public class DAQMoniChart
             });
         panel.add(showPointsCkbox);
 
-        JCheckBox hideLegendsCkbox = new JCheckBox("Hide legends");
-        hideLegendsCkbox.addItemListener(new ItemListener() {
-                public void itemStateChanged(ItemEvent evt)
-                {
-                    if (evt.getStateChange() == ItemEvent.SELECTED) {
-                        chartChoices.setHideLegends(true);
-                    } else if (evt.getStateChange() == ItemEvent.DESELECTED) {
-                        chartChoices.setHideLegends(false);
-                    } else {
-                        logMessage("Unknown hideLegend event #" +
-                                   evt.getStateChange() + ": " + evt);
-                    }
-                }
-            });
-        panel.add(hideLegendsCkbox);
-
         JCheckBox filterBoringCkbox = new JCheckBox("Filter uninteresting");
         filterBoringCkbox.addItemListener(new ItemListener() {
                 public void itemStateChanged(ItemEvent evt)
@@ -404,6 +405,18 @@ public class DAQMoniChart
         JPanel panel = new JPanel();
         panel.setLayout(new FlowLayout());
 
+        if (ADD_DUMP_BUTTON) {
+            JButton dumpState = new JButton("Dump state");
+            dumpState.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent evt)
+                    {
+                        System.out.println("Input Source: " + inputSrc);
+                        chartChoices.dump();
+                    }
+                });
+            panel.add(dumpState);
+        }
+
         JButton drawGraphs = new JButton("Draw graphs");
         drawGraphs.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt)
@@ -414,7 +427,7 @@ public class DAQMoniChart
                     if (chartGen.isEmpty()) {
                         logMessage("No data found!");
                     } else {
-                        String title = chartGen.getTitle();;
+                        String title = chartGen.makeTitle(inputSrc);
                         GraphFrame frame = new GraphFrame(title);
                         frame.setContentPane(chartGen.layout());
 
@@ -429,47 +442,57 @@ public class DAQMoniChart
         return panel;
     }
 
-    private JPanel buildSectionPanel(String section)
+    private File[] findDataFiles()
     {
-        List names = statData.getSectionNames(section);
-        if (names.size() <= 0) {
-            return null;
+        ArrayList list = new ArrayList();
+
+        for (int i = 0; i < DATA_DIR_NAME.length; i++) {
+            File dataDir = new File(DATA_DIR_NAME[i]);
+            if (!dataDir.isDirectory()) {
+                continue;
+            }
+
+            File[] dataFiles = dataDir.listFiles();
+            for (int f = 0; f < dataFiles.length; f++) {
+                String name = dataFiles[f].getName();
+                if (name.startsWith("eblog.") && name.endsWith(".log")) {
+                    list.add(dataFiles[f]);
+                }
+            }
+
+            if (list.size() > 0) {
+                return (File[]) list.toArray(new File[list.size()]);
+            }
         }
 
-        final int cols = 3;
-        final int rows = (names.size() + cols - 1) / cols;
+        return null;
+    }
 
-        SectionChoices sectionChoices =
-            chartChoices.getSection(section);
+    public void init()
+    {
+        Object[] dataFiles;
 
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-
-        IncAllCheckBox includeAll =
-            new IncAllCheckBox("Graph all " + section + " statistics",
-                               chartChoices, sectionChoices,
-                               typeButtons);
-        panel.add(includeAll, BorderLayout.PAGE_START);
-        typeButtons.addSection(includeAll);
-
-        JPanel gridPanel = new JPanel();
-        gridPanel.setLayout(new GridLayout(rows, cols));
-
-        Iterator iter2 = names.iterator();
-        while (iter2.hasNext()) {
-            String name = (String) iter2.next();
-
-            JCheckBox ckbox =
-                new NameCheckBox(name, chartChoices, sectionChoices,
-                                 typeButtons, includeAll);
-            gridPanel.add(ckbox);
-
-            includeAll.addIndividual(ckbox);
+        String fileName = getParameter("datafile");
+        if (fileName == null) {
+            dataFiles = findDataFiles();
+        } else {
+            URL url;
+            try {
+                dataFiles = new URL[] { new URL(fileName) };
+            } catch (MalformedURLException muex) {
+                throw new Error("Bad URL \"" + fileName + "\"", muex);
+            }
         }
 
-        panel.add(gridPanel, BorderLayout.CENTER);
+        if (dataFiles == null) {
+            throw new Error("No data files found!");
+        }
 
-        return panel;
+        setLayout(new BorderLayout());
+
+        add(buildMenu(dataFiles), BorderLayout.PAGE_START);
+        add(buildBottom(), BorderLayout.CENTER);
+        add(buildCommands(), BorderLayout.PAGE_END);
     }
 
     private void loadTabbedPane()
@@ -485,38 +508,46 @@ public class DAQMoniChart
         chartChoices.clearSections();
         chartChoices.initialize(statData);
 
-        HashMap map = new HashMap();
-
         Iterator sectIter = statData.getSections().iterator();
         while (sectIter.hasNext()) {
             String section = (String) sectIter.next();
 
-            JPanel panel = buildSectionPanel(section);
-            if (panel == null) {
-                continue;
-            }
+            List names = statData.getSectionNames(section);
+            if (names.size() > 0) {
+                final int cols = 3;
+                final int rows = (names.size() + cols - 1) / cols;
 
-            int colonIdx = section.indexOf(':');
-            if (colonIdx < 0) {
-                if (map.containsKey(section)) {
-                    System.err.println("Skipping extra entry for " + section);
-                } else {
-                    tabbedPane.addTab(section, panel);
+                SectionChoices sectionChoices =
+                    chartChoices.getSection(section);
+
+                JPanel panel = new JPanel();
+                panel.setLayout(new BorderLayout());
+
+                OLDIncAllCheckBox includeAll =
+                    new OLDIncAllCheckBox("Graph all " + section +
+                                          " statistics", chartChoices,
+                                          sectionChoices, typeButtons);
+                panel.add(includeAll, BorderLayout.PAGE_START);
+                typeButtons.addSection(includeAll);
+
+                JPanel gridPanel = new JPanel();
+                gridPanel.setLayout(new GridLayout(rows, cols));
+
+                Iterator iter2 = names.iterator();
+                while (iter2.hasNext()) {
+                    String name = (String) iter2.next();
+
+                    JCheckBox ckbox =
+                        new OLDNameCheckBox(name, chartChoices, sectionChoices,
+                                            typeButtons, includeAll);
+                    gridPanel.add(ckbox);
+
+                    includeAll.addIndividual(ckbox);
                 }
-            } else {
-                String compName = section.substring(0, colonIdx);
-                String beanName = section.substring(colonIdx + 1);
 
-                if (!map.containsKey(compName)) {
-                    JTabbedPane pane = new JTabbedPane();
+                panel.add(gridPanel, BorderLayout.CENTER);
 
-                    tabbedPane.addTab(compName, pane);
-
-                    map.put(compName, pane);
-                }
-
-                JTabbedPane pane = (JTabbedPane) map.get(compName);
-                pane.addTab(beanName, panel);
+                tabbedPane.addTab(section, panel);
             }
         }
 
@@ -525,7 +556,7 @@ public class DAQMoniChart
 
     private void logMessage(String msg)
     {
-        System.out.println(msg);
+        getAppletContext().showStatus(msg);
     }
 
     private void popupAlert(String[] msgLines)
@@ -543,8 +574,82 @@ public class DAQMoniChart
         logMessage(buf.toString());
     }
 
+    private void setChosen(GraphSource src)
+    {
+        inputSrc = src;
+
+        if (statData == null) {
+            statData = new StatData();
+        }
+
+        try {
+            statData.addData(inputSrc);
+        } catch (IOException ioex) {
+            statData = null;
+            popupAlert(new String[] {
+                    "Couldn't get statistics from \"" + inputSrc + "\"",
+                    ioex.getMessage()
+                });
+        }
+
+        loadTabbedPane();
+    }
+
+    public void stop()
+    {
+    }
+
     public static void main(String[] args)
     {
-        new DAQMoniChart(args);
+        HashMap params;
+        if (args.length == 0) {
+            params = null;
+        } else if (args.length == 0) {
+            File argFile = new File(args[0]);
+            if (!argFile.isFile()) {
+                System.err.println("\"" + args[0] + "\" is not a valid file!");
+                params = null;
+            } else {
+                try {
+                    params = new AppletParams(args[0]);
+                } catch (IOException ioe) {
+                    try {
+                        URL url = argFile.toURL();
+
+                        params = new HashMap();
+                        params.put("datafile", url.toString());
+                    } catch (MalformedURLException muex) {
+                        System.err.println("Could not build URL for \"" +
+                                           args[0] + "\": " +
+                                           muex.getMessage());
+                        params = null;
+                    }
+                }
+            }
+        } else {
+            params = new HashMap();
+
+            for (int i = 0; i < args.length; i++) {
+                File argFile = new File(args[i]);
+                if (!argFile.isFile()) {
+                    System.err.println("\"" + args[i] +
+                                       "\" is not a valid file!");
+                    continue;
+                }
+
+                URL url;
+                try {
+                    url = argFile.toURL();
+                } catch (MalformedURLException muex) {
+                    System.err.println("Could not build URL for \"" + argFile +
+                                       "\": " + muex.getMessage());
+                    continue;
+                }
+
+                params.put("datafile", url.toString());
+            }
+        }
+
+        new AppletFrame(new DAQGraphApplet(), 640, 480, params);
     }
 }

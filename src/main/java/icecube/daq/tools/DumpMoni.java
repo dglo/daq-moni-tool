@@ -3,11 +3,13 @@ package icecube.daq.tools;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+
 import java.util.ArrayList;
+import java.util.Iterator;
 
 public class DumpMoni
 {
-    private ArrayList<File> fileList = new ArrayList<File>();
+    private ArrayList fileList = new ArrayList();
 
     DumpMoni(String[] args)
     {
@@ -15,9 +17,19 @@ public class DumpMoni
 
         StatData statData = new StatData();
 
-        for (File f : fileList) {
+        Iterator fileIter = fileList.iterator();
+        while (fileIter.hasNext()) {
+            File f = (File) fileIter.next();
+
+            try {
+                statData.addData(new GraphSource(f));
+            } catch (IOException ioe) {
+                System.err.println("Couldn't load \"" + f + "\":");
+                ioe.printStackTrace();
+                continue;
+            }
+
             System.out.println(f + ":");
-            statData.loadFile(f, false, false);
         }
 
         dump(statData, System.out);
@@ -36,10 +48,16 @@ public class DumpMoni
 
     private void dump(StatData data, PrintStream out)
     {
-        for (SectionKey key : data.getSectionKeys()) {
-            for (String name : data.getSectionNames(key)) {
-                StatParent stats = data.getStatistics(key, name);
-                out.println(key + " " + name + " " + stats);
+        Iterator sIter = data.getSections().iterator();
+        while (sIter.hasNext()) {
+            String section = (String) sIter.next();
+
+            Iterator nIter = data.getSectionNames(section).iterator();
+            while (nIter.hasNext()) {
+                String name = (String) nIter.next();
+
+                StatParent stats = data.getStatistics(section, name);
+                out.println(section + " " + name + " " + stats);
             }
         }
     }

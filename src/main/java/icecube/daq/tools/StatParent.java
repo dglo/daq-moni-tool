@@ -1,76 +1,56 @@
 package icecube.daq.tools;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.Iterator;
 
 import org.jfree.data.time.TimeSeriesCollection;
 
-public abstract class StatParent<T>
+public abstract class StatParent
 {
-    private List<T> dataList;
+    private ArrayList dataList;
 
-    void add(T data)
+    void add(BaseData data)
     {
         if (dataList == null) {
-            dataList = new ArrayList<T>();
+            dataList = new ArrayList();
         }
 
         dataList.add(data);
     }
 
-    public boolean isEmpty()
+    public Iterator iterator()
     {
-        return dataList.size() < 2;
+        return dataList.iterator();
     }
 
-    public Iterable<T> iterator()
+    public TimeSeriesCollection plot(String section, String name,
+                                     boolean useLongName)
     {
-        return dataList;
-    }
-
-    public TimeSeriesCollection plot(SectionKey key, String name,
-                                     PlotArguments pargs)
-        throws StatPlotException
-    {
-        return plot(new TimeSeriesCollection(), key, name, pargs);
+        return plot(new TimeSeriesCollection(), section, name, useLongName);
     }
 
     public abstract TimeSeriesCollection plot(TimeSeriesCollection coll,
-                                              SectionKey key, String name,
-                                              PlotArguments pargs)
-        throws StatPlotException;
+                                              String section, String name,
+                                              boolean useLongName);
 
-    public TimeSeriesCollection plotDelta(SectionKey key, String name,
-                                          PlotArguments pargs)
-        throws StatPlotException
+    public TimeSeriesCollection plotDelta(String section, String name)
     {
-        return plotDelta(new TimeSeriesCollection(), key, name, pargs);
+        return plotDelta(new TimeSeriesCollection(), section, name);
     }
 
     public abstract TimeSeriesCollection plotDelta(TimeSeriesCollection coll,
-                                                   SectionKey key,
-                                                   String name,
-                                                   PlotArguments pargs)
-        throws StatPlotException;
+                                                   String section,
+                                                   String name);
 
     public abstract TimeSeriesCollection plotScaled(TimeSeriesCollection coll,
-                                                    SectionKey key,
-                                                    String name,
-                                                    PlotArguments pargs)
-        throws StatPlotException;
+                                                    String section,
+                                                    String name);
 
     public boolean showLegend()
     {
         return false;
     }
 
-    public Map<String, StatParent> transform(String name)
-    {
-        return null;
-    }
-
-    @Override
     public String toString()
     {
         return (dataList == null ? "null" : dataList.toString());

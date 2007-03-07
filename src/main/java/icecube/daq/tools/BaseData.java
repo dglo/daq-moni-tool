@@ -9,8 +9,6 @@ abstract class BaseData
         this.time = time;
     }
 
-    abstract StatParent createParent();
-
     abstract String getDataString();
 
     ChartTime getTime()
@@ -18,9 +16,6 @@ abstract class BaseData
         return time;
     }
 
-    abstract boolean isEmpty();
-
-    @Override
     public String toString()
     {
         return time.getTime() + "=" + getDataString();

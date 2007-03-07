@@ -3,12 +3,17 @@ package icecube.daq.tools;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics2D;
+
 import java.awt.font.FontRenderContext;
 import java.awt.font.LineMetrics;
+
 import java.awt.geom.Rectangle2D;
+
 import java.io.Serializable;
+
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -24,18 +29,24 @@ import org.jfree.chart.axis.TickUnitSource;
 import org.jfree.chart.axis.TickUnits;
 import org.jfree.chart.axis.Timeline;
 import org.jfree.chart.axis.ValueAxis;
+
 import org.jfree.chart.event.AxisChangeEvent;
+
 import org.jfree.chart.plot.Plot;
 import org.jfree.chart.plot.PlotRenderingInfo;
 import org.jfree.chart.plot.ValueAxisPlot;
+
 import org.jfree.data.Range;
+
 import org.jfree.data.time.DateRange;
 import org.jfree.data.time.Month;
 import org.jfree.data.time.RegularTimePeriod;
 import org.jfree.data.time.Year;
+
 import org.jfree.ui.RectangleEdge;
 import org.jfree.ui.RectangleInsets;
 import org.jfree.ui.TextAnchor;
+
 import org.jfree.util.ObjectUtilities;
 
 /**
@@ -121,8 +132,7 @@ class SecondTickUnit
      *
      * @return The formatted date.
      */
-    public String dateToString(Date date)
-    {
+    public String dateToString(Date date) {
         long milliseconds = date.getTime();
         long secs = milliseconds / 1000;
         if (!showMilliseconds) {
@@ -199,32 +209,31 @@ class SecondTickUnit
      *
      * @return The number of milliseconds.
      */
-    private static long getMillisecondCount(int unit, int count)
-    {
+    private static long getMillisecondCount(int unit, int count) {
 
         switch (unit) {
-        case (YEAR):
-            return (365L * 24L * 60L * 60L * 1000L) * count;
-        case (MONTH):
-            return (31L * 24L * 60L * 60L * 1000L) * count;
-        case (DAY):
-            return (24L * 60L * 60L * 1000L) * count;
-        case (HOUR):
-            return (60L * 60L * 1000L) * count;
-        case (MINUTE):
-            return (60L * 1000L) * count;
-        case (SECOND):
-            return 1000L * count;
-        case (MILLISECOND):
-            return count;
-        default:
-            throw new IllegalArgumentException(
-                "DateTickUnit.getMillisecondCount() : unit must " +
-                "be one of the constants YEAR, MONTH, DAY, HOUR, MINUTE, " +
-                "SECOND or MILLISECOND defined in the DateTickUnit " +
-                "class. Do *not* use the constants defined in " +
-                "java.util.Calendar."
-            );
+            case (YEAR):
+                return (365L * 24L * 60L * 60L * 1000L) * count;
+            case (MONTH):
+                return (31L * 24L * 60L * 60L * 1000L) * count;
+            case (DAY):
+                return (24L * 60L * 60L * 1000L) * count;
+            case (HOUR):
+                return (60L * 60L * 1000L) * count;
+            case (MINUTE):
+                return (60L * 1000L) * count;
+            case (SECOND):
+                return 1000L * count;
+            case (MILLISECOND):
+                return count;
+            default:
+                throw new IllegalArgumentException(
+                    "DateTickUnit.getMillisecondCount() : unit must "
+                    + "be one of the constants YEAR, MONTH, DAY, HOUR, MINUTE, "
+                    + "SECOND or MILLISECOND defined in the DateTickUnit "
+                    + "class. Do *not* use the constants defined in "
+                    + "java.util.Calendar."
+                );
         }
     }
 
@@ -266,7 +275,6 @@ class SecondTickUnit
      *
      * @return The formatted date.
      */
-    @Override
     public String valueToString(double milliseconds)
     {
         long secs = (long) milliseconds / 1000;
@@ -306,11 +314,11 @@ class SecondAxis
 
     /** The default minimum auto range size. */
     public static final double
-    DEFAULT_AUTO_RANGE_MINIMUM_SIZE_IN_MILLISECONDS = 2.0;
+        DEFAULT_AUTO_RANGE_MINIMUM_SIZE_IN_MILLISECONDS = 2.0;
 
     /** The default date tick unit. */
     public static final SecondTickUnit DEFAULT_DATE_TICK_UNIT
-    //  = new SecondTickUnit(SecondTickUnit.DAY, 1, new SimpleDateFormat());
+//        = new SecondTickUnit(SecondTickUnit.DAY, 1, new SimpleDateFormat());
         = new SecondTickUnit(SecondTickUnit.DAY, 1, false);
 
     /** The default anchor date. */
@@ -342,7 +350,6 @@ class SecondAxis
          *
          * @return The timeline value.
          */
-        @Override
         public long toTimelineValue(long millisecond)
         {
             return millisecond;
@@ -368,7 +375,6 @@ class SecondAxis
          *
          * @return The millisecond.
          */
-        @Override
         public long toMillisecond(long value)
         {
             return value;
@@ -382,7 +388,6 @@ class SecondAxis
          *
          * @return <code>true</code>.
          */
-        @Override
         public boolean containsDomainValue(long millisecond)
         {
             return true;
@@ -396,7 +401,6 @@ class SecondAxis
          *
          * @return <code>true</code>.
          */
-        @Override
         public boolean containsDomainValue(Date date)
         {
             return true;
@@ -411,7 +415,6 @@ class SecondAxis
          *
          * @return <code>true</code>.
          */
-        @Override
         public boolean containsDomainRange(long from, long to)
         {
             return true;
@@ -438,7 +441,6 @@ class SecondAxis
          *
          * @return A boolean.
          */
-        @Override
         public boolean equals(Object object)
         {
             if (object == null) {
@@ -658,7 +660,6 @@ class SecondAxis
      * @param lower  the lower bound for the axis.
      * @param upper  the upper bound for the axis.
      */
-    @Override
     public void setRange(double lower, double upper)
     {
         if (lower >= upper) {
@@ -776,8 +777,7 @@ class SecondAxis
      *
      * @return A value.
      */
-    public boolean isHiddenValue(long millis)
-    {
+    public boolean isHiddenValue(long millis) {
         return (!this.timeline.containsDomainValue(new Date(millis)));
     }
 
@@ -805,21 +805,21 @@ class SecondAxis
             double minX = area.getX();
             double maxX = area.getMaxX();
             if (isInverted()) {
-                result = maxX + ((value - axisMin) / (axisMax - axisMin)) *
-                    (minX - maxX);
+                result = maxX + ((value - axisMin) / (axisMax - axisMin))
+                    * (minX - maxX);
             } else {
-                result = minX + ((value - axisMin) / (axisMax - axisMin)) *
-                    (maxX - minX);
+                result = minX + ((value - axisMin) / (axisMax - axisMin))
+                    * (maxX - minX);
             }
         } else if (RectangleEdge.isLeftOrRight(edge)) {
             double minY = area.getMinY();
             double maxY = area.getMaxY();
             if (isInverted()) {
-                result = minY + (((value - axisMin) / (axisMax - axisMin)) *
-                                 (maxY - minY));
+                result = minY + (((value - axisMin) / (axisMax - axisMin))
+                                 * (maxY - minY));
             } else {
-                result = maxY - (((value - axisMin) / (axisMax - axisMin)) *
-                                 (maxY - minY));
+                result = maxY - (((value - axisMin) / (axisMax - axisMin))
+                                 * (maxY - minY));
             }
         }
         return result;
@@ -875,11 +875,11 @@ class SecondAxis
 
         double result;
         if (isInverted()) {
-            result = axisMax - ((java2DValue - min) / (max - min) *
-                                (axisMax - axisMin));
+            result = axisMax - ((java2DValue - min) / (max - min)
+                                * (axisMax - axisMin));
         } else {
-            result = axisMin + ((java2DValue - min) / (max - min) *
-                                (axisMax - axisMin));
+            result = axisMin + ((java2DValue - min) / (max - min)
+                                * (axisMax - axisMin));
         }
 
         return this.timeline.toMillisecond((long) result);
@@ -1029,14 +1029,14 @@ class SecondAxis
             calendar.set(years, value, 1, 0, 0, 0);
             Month month = new Month(calendar.getTime());
             Date standardDate = calculateDateForPosition(
-                month, this.tickMarkPosition
-            );
+                                                         month, this.tickMarkPosition
+                                                         );
             long millis = standardDate.getTime();
             if (millis > date.getTime()) {
                 month = (Month) month.previous();
                 standardDate = calculateDateForPosition(
-                    month, this.tickMarkPosition
-                );
+                                                        month, this.tickMarkPosition
+                                                        );
             }
             return standardDate;
 
@@ -1055,8 +1055,7 @@ class SecondAxis
             calendar.set(value, months, days, 0, 0, 0);
             return calendar.getTime();
 
-        default:
-            return null;
+        default: return null;
 
         }
 
@@ -1258,14 +1257,13 @@ class SecondAxis
     /**
      * Rescales the axis to ensure that all data is visible.
      */
-    @Override
     protected void autoAdjustRange()
     {
 
         Plot plot = getPlot();
 
         if (plot == null) {
-            return;
+            return;  // no plot, no data
         }
 
         if (plot instanceof ValueAxisPlot) {
@@ -1275,9 +1273,8 @@ class SecondAxis
             if (r == null) {
                 if (this.timeline instanceof SegmentedTimeline) {
                     //Timeline hasn't method getStartTime()
-                    r = new DateRange(((SegmentedTimeline) this.timeline).
-                        getStartTime(), ((SegmentedTimeline) this.timeline).
-                        getStartTime() + 1);
+                    r = new DateRange(((SegmentedTimeline) this.timeline).getStartTime(),
+                                      ((SegmentedTimeline) this.timeline).getStartTime() + 1);
                 } else {
                     r = new DateRange();
                 }
@@ -1413,8 +1410,7 @@ class SecondAxis
         if (labelHeight2 < unit2Height) {
             finalUnit = candidate2;
         } else {
-            finalUnit = (SecondTickUnit) tickUnits.
-                getLargerTickUnit(candidate2);
+            finalUnit = (SecondTickUnit) tickUnits.getLargerTickUnit(candidate2);
         }
         setTickUnit(finalUnit, false, false);
 
@@ -1637,8 +1633,7 @@ class SecondAxis
                                                     this.tickMarkPosition);
                 break;
 
-            default:
-                break;
+            default: break;
 
             }
 
@@ -1766,16 +1761,14 @@ class SecondAxis
      * @param lowerPercent  the new lower bound.
      * @param upperPercent  the new upper bound.
      */
-    @Override
     public void zoomRange(double lowerPercent, double upperPercent)
     {
         double start =
             this.timeline.toTimelineValue((long) getRange().getLowerBound()
-            );
-
+                                                     );
         double length =
-            (this.timeline.toTimelineValue((long) getRange().getUpperBound()) -
-             this.timeline.toTimelineValue((long) getRange().getLowerBound()));
+            (this.timeline.toTimelineValue((long) getRange().getUpperBound())
+             - this.timeline.toTimelineValue((long) getRange().getLowerBound()));
         long fromVal, toVal;
         if (isInverted()) {
             fromVal = (long) (start + (length * (1 - upperPercent)));
@@ -1797,7 +1790,6 @@ class SecondAxis
      *
      * @return A boolean.
      */
-    @Override
     public boolean equals(Object obj)
     {
         if (obj == this) {
@@ -1831,7 +1823,6 @@ class SecondAxis
      *
      * @return A hash code.
      */
-    @Override
     public int hashCode()
     {
         if (getLabel() != null) {
@@ -1849,7 +1840,6 @@ class SecondAxis
      * @throws CloneNotSupportedException if some component of the axis does
      *         not support cloning.
      */
-    @Override
     public Object clone()
         throws CloneNotSupportedException
     {
