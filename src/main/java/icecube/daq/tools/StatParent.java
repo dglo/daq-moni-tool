@@ -18,6 +18,19 @@ public abstract class StatParent
         dataList.add(data);
     }
 
+    public boolean isEmpty()
+    {
+        if (dataList.size() == 0) {
+            return true;
+        }
+
+        if (dataList.size() > 1) {
+            return false;
+        }
+
+        return ((BaseData) dataList.get(0)).isEmpty();
+    }
+
     public Iterator iterator()
     {
         return dataList.iterator();
