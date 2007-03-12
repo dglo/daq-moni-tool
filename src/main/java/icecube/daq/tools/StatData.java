@@ -2470,6 +2470,7 @@ public class StatData
                 } catch (StatParseException pe) {
                     System.err.println(pe.getMessage());
                     continue;
+}catch(ClassCastException cce){System.err.println("For \"" + line + "\":");cce.printStackTrace();continue;
                 }
 
                 if (parser.isDone()) {
