@@ -11,10 +11,14 @@ abstract class BaseData
 
     abstract String getDataString();
 
+    abstract StatParent getParent();
+
     ChartTime getTime()
     {
         return time;
     }
+
+    abstract boolean isEmpty();
 
     public String toString()
     {
