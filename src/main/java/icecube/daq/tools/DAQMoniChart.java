@@ -13,10 +13,8 @@ import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 
-import java.net.MalformedURLException;
-import java.net.URL;
-
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -24,14 +22,195 @@ import java.util.List;
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
 
 import org.jfree.ui.RefineryUtilities;
+
+class InstanceBean
+{
+    private String name;
+    private List itemNames;
+    private String sectionName;
+
+    private boolean includeAll;
+    private List graphNames;
+
+    InstanceBean(String name, List itemNames, String sectionName)
+    {
+        this.name = name;
+        this.itemNames = itemNames;
+        this.sectionName = sectionName;
+    }
+
+    public void addGraph(String name)
+    {
+        if (!itemNames.contains(name)) {
+            throw new Error("Bogus graph " + name + " for " + this.name);
+        }
+
+        if (graphNames == null) {
+            graphNames = new ArrayList();
+        }
+
+        graphNames.add(name);
+    }
+
+    String getName()
+    {
+        return name;
+    }
+
+    String getSectionName()
+    {
+        return sectionName;
+    }
+
+    public boolean hasGraphs()
+    {
+        return includeAll || (graphNames != null && graphNames.size() > 0);
+    }
+
+    public boolean isIncludeAll()
+    {
+        return includeAll;
+    }
+
+    public boolean isChosen(String name)
+    {
+        return (includeAll ||
+                (graphNames != null && graphNames.contains(name)));
+    }
+
+    List list()
+    {
+        return itemNames;
+    }
+
+    List listGraph()
+    {
+        return graphNames;
+    }
+
+    boolean matches(String name)
+    {
+        return this.name.equals(name);
+    }
+
+    public void removeGraph(String name)
+    {
+        if (graphNames != null) {
+            graphNames.remove(name);
+        }
+    }
+
+    void setIncludeAll(boolean val)
+    {
+        includeAll = val;
+    }
+
+    public String toString()
+    {
+        return name;
+    }
+}
+
+class ComponentInstance
+{
+    private int num;
+    private ArrayList<InstanceBean> list;
+
+    ComponentInstance(int num)
+    {
+        this.num = num;
+        this.list = new ArrayList<InstanceBean>();
+    }
+
+    InstanceBean create(String name, List itemNames, String sectionName)
+    {
+        InstanceBean bean = new InstanceBean(name, itemNames, sectionName);
+        list.add(bean);
+        return bean;
+    }
+
+    InstanceBean get(String name)
+    {
+        for (InstanceBean ib : list) {
+            if (ib.matches(name)) {
+                return ib;
+            }
+        }
+
+        return null;
+    }
+
+    int getNumber()
+    {
+        return num;
+    }
+
+    List<InstanceBean> list()
+    {
+        return list;
+    }
+
+    boolean matches(int num)
+    {
+        return this.num == num;
+    }
+}
+
+class ComponentData
+{
+    private String name;
+    private ArrayList<ComponentInstance> list;
+
+    ComponentData(String name)
+    {
+        this.name = name;
+        this.list = new ArrayList<ComponentInstance>();
+    }
+
+    ComponentInstance create(int instNum)
+    {
+        ComponentInstance inst = new ComponentInstance(instNum);
+        list.add(inst);
+        return inst;
+    }
+
+    ComponentInstance get(int instNum)
+    {
+        for (ComponentInstance ci : list) {
+            if (ci.matches(instNum)) {
+                return ci;
+            }
+        }
+
+        return null;
+    }
+
+    String getName()
+    {
+        return name;
+    }
+
+    boolean isSingleInstance()
+    {
+        return list.size() == 1;
+    }
+
+    List<ComponentInstance> list()
+    {
+        return list;
+    }
+
+    boolean matches(String name)
+    {
+        return this.name.equals(name);
+    }
+}
 
 class TypeButtons
 {
@@ -84,24 +263,24 @@ abstract class SectionChoicesCheckBox
     implements ItemListener
 {
     private ChartChoices chartChoices;
-    private SectionChoices choices;
+    private InstanceBean instBean;
     private TypeButtons typeButtons;
 
     SectionChoicesCheckBox(String name, ChartChoices chartChoices,
-                           SectionChoices choices, TypeButtons typeButtons)
+                           InstanceBean instBean, TypeButtons typeButtons)
     {
         super(name);
 
         addItemListener(this);
 
         this.chartChoices = chartChoices;
-        this.choices = choices;
+        this.instBean = instBean;
         this.typeButtons = typeButtons;
     }
 
-    SectionChoices getChoices()
+    InstanceBean getBean()
     {
-        return choices;
+        return instBean;
     }
 
     public abstract void itemStateChanged(ItemEvent evt);
@@ -117,12 +296,12 @@ abstract class SectionChoicesCheckBox
 class IncAllCheckBox
     extends SectionChoicesCheckBox
 {
-    ArrayList list = new ArrayList();
+    private ArrayList list = new ArrayList();
 
     IncAllCheckBox(String name, ChartChoices chartChoices,
-                   SectionChoices choices, TypeButtons typeButtons)
+                   InstanceBean instBean, TypeButtons typeButtons)
     {
-        super(name, chartChoices, choices, typeButtons);
+        super(name, chartChoices, instBean, typeButtons);
     }
 
     void addIndividual(JCheckBox ckbox)
@@ -148,14 +327,14 @@ class IncAllCheckBox
     public void itemStateChanged(ItemEvent evt)
     {
         if (evt.getStateChange() == ItemEvent.SELECTED) {
-            getChoices().setIncludeAll(true);
+            getBean().setIncludeAll(true);
             setShowSelected();
             clearIndividual();
         } else if (evt.getStateChange() == ItemEvent.DESELECTED) {
-            getChoices().setIncludeAll(false);
+            getBean().setIncludeAll(false);
         } else {
             System.err.println("Unknown includeAll(" +
-                               getChoices().getSection() + " event #" +
+                               getBean() + " event #" +
                                evt.getStateChange() + ": " + evt);
         }
     }
@@ -166,11 +345,10 @@ class NameCheckBox
 {
     private JCheckBox incAllBox;
 
-    NameCheckBox(String name, ChartChoices chartChoices,
-                 SectionChoices choices, TypeButtons typeButtons,
-                 JCheckBox incAllBox)
+    NameCheckBox(String name, ChartChoices chartChoices, InstanceBean instBean,
+                 TypeButtons typeButtons, JCheckBox incAllBox)
     {
-        super(name, chartChoices, choices, typeButtons);
+        super(name, chartChoices, instBean, typeButtons);
 
         this.incAllBox = incAllBox;
     }
@@ -183,15 +361,48 @@ class NameCheckBox
     public void itemStateChanged(ItemEvent evt)
     {
         if (evt.getStateChange() == ItemEvent.SELECTED) {
-            getChoices().add(getText());
+            getBean().addGraph(getText());
             setShowSelected();
             clearSectionAll();
         } else if (evt.getStateChange() == ItemEvent.DESELECTED) {
-            getChoices().remove(getText());
+            getBean().removeGraph(getText());
         } else {
             System.err.println("Unknown sectionName(" +
-                               getChoices().getSection() + " event #" +
+                               getBean() + " event #" +
                                evt.getStateChange() + ": " + evt);
+        }
+    }
+}
+
+class TemplateCheckBox
+    extends JCheckBox
+    implements ItemListener
+{
+    private List ckboxList;
+
+    TemplateCheckBox(String name, List ckboxList)
+    {
+        super(name);
+
+        addItemListener(this);
+
+        this.ckboxList = ckboxList;
+    }
+
+    public void itemStateChanged(ItemEvent evt)
+    {
+        Iterator iter = ckboxList.iterator();
+        while (iter.hasNext()) {
+            NameCheckBox ckbox = (NameCheckBox) iter.next();
+            if (evt.getStateChange() == ItemEvent.SELECTED &&
+                !ckbox.isSelected())
+            {
+                ckbox.doClick();
+            } else if (evt.getStateChange() == ItemEvent.DESELECTED &&
+                       ckbox.isSelected())
+            {
+                ckbox.doClick();
+            }
         }
     }
 }
@@ -199,6 +410,8 @@ class NameCheckBox
 public class DAQMoniChart
     extends JFrame
 {
+    private static final String TEMPLATE_TITLE = "All";
+
     private ChartChoices chartChoices = new ChartChoices();
 
     private StatData statData;
@@ -237,13 +450,54 @@ public class DAQMoniChart
         setTitle("Monitoring Charts");
         setLayout(new BorderLayout());
 
-        add(buildBottom(), BorderLayout.CENTER);
-        add(buildCommands(), BorderLayout.PAGE_END);
+        ArrayList<ComponentData> compList = extractComponentData(statData);
 
-        loadTabbedPane();
+        add(buildBottom(), BorderLayout.CENTER);
+        add(buildCommands(compList, statData), BorderLayout.PAGE_END);
+
+        loadTabbedPane(compList);
 
         resize(640, 480);
         show();
+    }
+
+    private void addBeanPanel(JTabbedPane pane, ComponentInstance compInst)
+    {
+        for (InstanceBean instBean : compInst.list()) {
+            List names = instBean.list();
+
+            final int cols = 3;
+            final int rows = (names.size() + cols - 1) / cols;
+
+            JPanel panel = new JPanel();
+            panel.setLayout(new BorderLayout());
+
+            IncAllCheckBox includeAll =
+                new IncAllCheckBox("Graph all " + instBean.getName() +
+                                   " statistics", chartChoices, instBean,
+                                   typeButtons);
+            panel.add(includeAll, BorderLayout.PAGE_START);
+            typeButtons.addSection(includeAll);
+
+            JPanel gridPanel = new JPanel();
+            gridPanel.setLayout(new GridLayout(rows, cols));
+
+            Iterator iter = names.iterator();
+            while (iter.hasNext()) {
+                String name = (String) iter.next();
+
+                JCheckBox ckbox =
+                    new NameCheckBox(name, chartChoices, instBean, typeButtons,
+                                     includeAll);
+                gridPanel.add(ckbox);
+
+                includeAll.addIndividual(ckbox);
+            }
+
+            panel.add(gridPanel, BorderLayout.CENTER);
+
+            pane.addTab(instBean.getName(), panel);
+        }
     }
 
     private Component buildBottom()
@@ -399,7 +653,8 @@ public class DAQMoniChart
         return panel;
     }
 
-    private Component buildCommands()
+    private Component buildCommands(final List<ComponentData> compList,
+                                    final StatData statData)
     {
         JPanel panel = new JPanel();
         panel.setLayout(new FlowLayout());
@@ -409,12 +664,12 @@ public class DAQMoniChart
                 public void actionPerformed(ActionEvent evt)
                 {
                     ChartGenerator chartGen =
-                        new ChartGenerator(statData, chartChoices);
+                        new ChartGenerator(compList, statData, chartChoices);
 
                     if (chartGen.isEmpty()) {
                         logMessage("No data found!");
                     } else {
-                        String title = chartGen.getTitle();;
+                        String title = chartGen.getTitle();
                         GraphFrame frame = new GraphFrame(title);
                         frame.setContentPane(chartGen.layout());
 
@@ -429,61 +684,9 @@ public class DAQMoniChart
         return panel;
     }
 
-    private JPanel buildSectionPanel(String section)
+    private ArrayList<ComponentData> extractComponentData(StatData statData)
     {
-        List names = statData.getSectionNames(section);
-        if (names.size() <= 0) {
-            return null;
-        }
-
-        final int cols = 3;
-        final int rows = (names.size() + cols - 1) / cols;
-
-        SectionChoices sectionChoices =
-            chartChoices.getSection(section);
-
-        JPanel panel = new JPanel();
-        panel.setLayout(new BorderLayout());
-
-        IncAllCheckBox includeAll =
-            new IncAllCheckBox("Graph all " + section + " statistics",
-                               chartChoices, sectionChoices,
-                               typeButtons);
-        panel.add(includeAll, BorderLayout.PAGE_START);
-        typeButtons.addSection(includeAll);
-
-        JPanel gridPanel = new JPanel();
-        gridPanel.setLayout(new GridLayout(rows, cols));
-
-        Iterator iter2 = names.iterator();
-        while (iter2.hasNext()) {
-            String name = (String) iter2.next();
-
-            JCheckBox ckbox =
-                new NameCheckBox(name, chartChoices, sectionChoices,
-                                 typeButtons, includeAll);
-            gridPanel.add(ckbox);
-
-            includeAll.addIndividual(ckbox);
-        }
-
-        panel.add(gridPanel, BorderLayout.CENTER);
-
-        return panel;
-    }
-
-    private void loadTabbedPane()
-    {
-        while (tabbedPane.getTabCount() > 0) {
-            tabbedPane.removeTabAt(0);
-        }
-
-        if (statData == null) {
-            return;
-        }
-
-        chartChoices.clearSections();
-        chartChoices.initialize(statData);
+        ArrayList<ComponentData> list = new ArrayList<ComponentData>();
 
         HashMap map = new HashMap();
 
@@ -491,32 +694,179 @@ public class DAQMoniChart
         while (sectIter.hasNext()) {
             String section = (String) sectIter.next();
 
-            JPanel panel = buildSectionPanel(section);
-            if (panel == null) {
+            List names = statData.getSectionNames(section);
+            if (names.size() <= 0) {
                 continue;
             }
 
-            int colonIdx = section.indexOf(':');
-            if (colonIdx < 0) {
-                if (map.containsKey(section)) {
-                    System.err.println("Skipping extra entry for " + section);
-                } else {
-                    tabbedPane.addTab(section, panel);
-                }
+            final int minusIdx = section.indexOf('-');
+            final int colonIdx = section.indexOf(':', minusIdx + 1);
+            if (colonIdx < 0 || minusIdx < 0) {
+                System.err.println("Bad section name \"" + section + "\"");
+                continue;
+            }
+
+            String compName = section.substring(0, minusIdx);
+            String beanName = section.substring(colonIdx + 1);
+
+            int instNum;
+            if (minusIdx == colonIdx - 2 &&
+                section.charAt(minusIdx + 1) == '0')
+            {
+                instNum = 0;
             } else {
-                String compName = section.substring(0, colonIdx);
-                String beanName = section.substring(colonIdx + 1);
+                String numStr = section.substring(minusIdx + 1, colonIdx);
+                try {
+                    instNum = Integer.parseInt(numStr);
+                } catch (NumberFormatException nfe) {
+                    System.err.println("Bad instance number \"" + numStr +
+                                       "\" in section \"" + section + "\"");
+                    continue;
+                }
+            }
 
-                if (!map.containsKey(compName)) {
-                    JTabbedPane pane = new JTabbedPane();
+            ComponentData compData = (ComponentData) map.get(compName);
+            if (compData == null) {
+                compData = new ComponentData(compName);
+                map.put(compName, compData);
+                list.add(compData);
+            }
 
-                    tabbedPane.addTab(compName, pane);
+            ComponentInstance compInst = compData.get(instNum);
+            if (compInst == null) {
+                compInst = compData.create(instNum);
+            }
 
-                    map.put(compName, pane);
+            InstanceBean beanData = compInst.get(beanName);
+            if (beanData != null) {
+                System.err.println("Found multiple instances of component \"" +
+                                   compName + "\" instance " + instNum +
+                                   " bean \"" + beanName + "\"");
+                continue;
+            }
+
+            compInst.create(beanName, names, section);
+        }
+
+        return list;
+    }
+
+    private void fillTemplatePanel(JTabbedPane topPane, JTabbedPane pane)
+    {
+        HashMap map = new HashMap();
+
+        for (int i = 0; i < topPane.getTabCount(); i++) {
+            if (topPane.getTitleAt(i).equals(TEMPLATE_TITLE)) {
+                continue;
+            }
+
+            JTabbedPane instPane = (JTabbedPane) topPane.getComponentAt(i);
+            for (int j = 0; j < instPane.getTabCount(); j++) {
+                final String title = instPane.getTitleAt(j);
+
+                HashMap nameMap = (HashMap) map.get(title);
+                if (nameMap == null) {
+                    nameMap = new HashMap();
+                    map.put(title, nameMap);
                 }
 
-                JTabbedPane pane = (JTabbedPane) map.get(compName);
-                pane.addTab(beanName, panel);
+                JPanel subPane = (JPanel) instPane.getComponentAt(j);
+                if (subPane.getComponentCount() != 2) {
+                    System.err.println("Unexpected number of components in " +
+                                       pane.getTitleAt(i) + "-" +
+                                       instPane.getTitleAt(j) + " panel");
+                    continue;
+                }
+
+                JPanel boxPane = (JPanel) subPane.getComponent(1);
+                for (int k = 0; k < boxPane.getComponentCount(); k++) {
+                    NameCheckBox ckBox =
+                        (NameCheckBox) boxPane.getComponent(k);
+
+                    String label = ckBox.getText();
+
+                    List ckboxList = (List) nameMap.get(label);
+                    if (ckboxList == null) {
+                        ckboxList = new ArrayList();
+                        nameMap.put(label, ckboxList);
+                    }
+
+                    ckboxList.add(ckBox);
+                }
+            }
+        }
+
+        List beanNames = new ArrayList(map.keySet());
+        Collections.sort(beanNames);
+
+        Iterator beanIter = beanNames.iterator();
+        while (beanIter.hasNext()) {
+            final String beanName = (String) beanIter.next();
+
+            HashMap nameMap = (HashMap) map.get(beanName);
+
+            List names = new ArrayList((nameMap).keySet());
+            Collections.sort(names);
+
+            final int cols = 3;
+            final int rows = (names.size() + cols - 1) / cols;
+
+            JPanel panel = new JPanel();
+            panel.setLayout(new GridLayout(rows, cols));
+
+            Iterator iter = names.iterator();
+            while (iter.hasNext()) {
+                String name = (String) iter.next();
+
+                List list = (List) nameMap.get(name);
+
+                JCheckBox ckbox = new TemplateCheckBox(name, list);
+                panel.add(ckbox);
+            }
+
+            pane.addTab(beanName, panel);
+        }
+    }
+
+    private JTabbedPane getPane(JTabbedPane tabbedPane, String name)
+    {
+        final int paneIdx = tabbedPane.indexOfTab(name);
+        if (paneIdx >= 0) {
+            return (JTabbedPane) tabbedPane.getComponentAt(paneIdx);
+        }
+
+        JTabbedPane pane = new JTabbedPane();
+        tabbedPane.addTab(name, pane);
+
+        return pane;
+    }
+
+    private void loadTabbedPane(ArrayList<ComponentData> compList)
+    {
+        while (tabbedPane.getTabCount() > 0) {
+            tabbedPane.removeTabAt(0);
+        }
+
+        for (ComponentData compData : compList) {
+            JTabbedPane compPane = getPane(tabbedPane, compData.getName());
+
+            if (compData.isSingleInstance()) {
+                ComponentInstance compInst = compData.list().get(0);
+
+                addBeanPanel(compPane, compInst);
+            } else {
+                JTabbedPane allPane = new JTabbedPane();
+                compPane.addTab(TEMPLATE_TITLE, allPane);
+
+                for (ComponentInstance compInst : compData.list()) {
+                    JTabbedPane instPane = new JTabbedPane();
+                    compPane.addTab(Integer.toString(compInst.getNumber()),
+                                      instPane);
+
+                    addBeanPanel(instPane, compInst);
+                }
+
+                fillTemplatePanel(compPane, allPane);
             }
         }
 
