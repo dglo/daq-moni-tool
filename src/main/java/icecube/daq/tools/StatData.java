@@ -874,7 +874,7 @@ class StrandStat
             prefix = section + " " + name + " ";
         }
 
-        TimeSeries series[] = new TimeSeries[numStrands];
+        TimeSeries[] series = new TimeSeries[numStrands];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + "Strand " + i, Second.class);
             coll.addSeries(series[i]);
@@ -897,7 +897,7 @@ class StrandStat
     {
         final String prefix = section + " " + name + " ";
 
-        TimeSeries series[] = new TimeSeries[numStrands];
+        TimeSeries[] series = new TimeSeries[numStrands];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + "Strand " + i, Second.class);
             coll.addSeries(series[i]);
@@ -932,7 +932,7 @@ class StrandStat
     {
         final String prefix = section + " " + name + " ";
 
-        TimeSeries series[] = new TimeSeries[numStrands];
+        TimeSeries[] series = new TimeSeries[numStrands];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + "Strand " + i, Second.class);
             coll.addSeries(series[i]);
@@ -1413,7 +1413,7 @@ class TimingStat
             prefix = section + " " + name + " ";
         }
 
-        TimeSeries series[] = new TimeSeries[titles.size()];
+        TimeSeries[] series = new TimeSeries[titles.size()];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + titles.get(i), Second.class);
             coll.addSeries(series[i]);
@@ -1459,7 +1459,7 @@ class TimingStat
     {
         final String prefix = section + " " + name + " ";
 
-        TimeSeries series[] = new TimeSeries[titles.size()];
+        TimeSeries[] series = new TimeSeries[titles.size()];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + titles.get(i), Second.class);
             coll.addSeries(series[i]);
@@ -1573,8 +1573,6 @@ class TimingStat
             final String title = matcher.group(1);
             final String cTime = matcher.group(2);
             final String num = matcher.group(3);
-            final String avg = matcher.group(4);
-            final String pct = matcher.group(5);
 
             TimingPiece data;
             try {
@@ -1611,8 +1609,6 @@ class TimingStat
 abstract class ListData
     extends BaseData
 {
-    private long[] vals;
-
     ListData(ChartTime time)
     {
         super(time);
@@ -1801,7 +1797,7 @@ class ListStat
             prefix = section + " " + name + " ";
         }
 
-        TimeSeries series[] = new TimeSeries[numEntries];
+        TimeSeries[] series = new TimeSeries[numEntries];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + "List " + i, Second.class);
             coll.addSeries(series[i]);
@@ -1824,7 +1820,7 @@ class ListStat
     {
         final String prefix = section + " " + name + " ";
 
-        TimeSeries series[] = new TimeSeries[numEntries];
+        TimeSeries[] series = new TimeSeries[numEntries];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + "List " + i, Second.class);
             coll.addSeries(series[i]);
@@ -1859,7 +1855,7 @@ class ListStat
     {
         final String prefix = section + " " + name + " ";
 
-        TimeSeries series[] = new TimeSeries[numEntries];
+        TimeSeries[] series = new TimeSeries[numEntries];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + "List " + i, Second.class);
             coll.addSeries(series[i]);
@@ -1902,7 +1898,7 @@ class ListStat
         return coll;
     }
 
-    private static final double[] getDoubleArray(String line, String[] valStrs)
+    private static double[] getDoubleArray(String line, String[] valStrs)
         throws StatParseException
     {
         double[] vals = new double[valStrs.length];
@@ -1919,7 +1915,7 @@ class ListStat
         return vals;
     }
 
-    private static final long[] getLongArray(String line, String[] valStrs)
+    private static long[] getLongArray(String line, String[] valStrs)
         throws StatParseException
     {
         long[] vals = new long[valStrs.length];
@@ -1970,7 +1966,6 @@ class ListStat
             data = new LongListData(time, new long[0]);
         } else {
             try {
-                long lVal = Long.parseLong(valStrs[0]);
                 data = new LongListData(time, getLongArray(line, valStrs));
             } catch (NumberFormatException nfe) {
                 // must not be a long value
@@ -1979,7 +1974,6 @@ class ListStat
 
             if (data == null) {
                 try {
-                    double dVal = Double.parseDouble(valStrs[0]);
                     data = new DoubleListData(time, getDoubleArray(line,
                                                                    valStrs));
                 } catch (NumberFormatException nfe) {
@@ -2040,7 +2034,7 @@ abstract class BaseParser
     }
 }
 
-class BombardParser
+final class BombardParser
     extends BaseParser
 {
     private static final Pattern PARSE_PAT =
@@ -2123,7 +2117,7 @@ class BombardParser
     }
 }
 
-class EBLogParser
+final class EBLogParser
     extends BaseParser
 {
     private static final Pattern PARSE_PAT =
@@ -2279,13 +2273,13 @@ class EBLogParser
     }
 }
 
-class PDAQParser
+final class PDAQParser
     extends BaseParser
 {
     private static final Pattern BEAN_PAT =
         Pattern.compile("^Bean\\s+(\\S+)\\s*$");
 
-    private static final SimpleDateFormat dateFmt;
+    private static SimpleDateFormat dateFmt;
 
     static {
         dateFmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -2441,7 +2435,6 @@ public class StatData
         }
 
         BaseParser parser = null;
-        Date time = null;
 
         BufferedReader rdr = inputSrc.getReader();
         while (true) {
