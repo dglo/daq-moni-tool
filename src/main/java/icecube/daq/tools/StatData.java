@@ -61,6 +61,14 @@ class LongStat
     private static final Pattern STAT_PAT =
         Pattern.compile("^(\\s+([^\\s:]+)|\\s*(.+)\\s*):?\\s+(\\d+)L?\\s*$");
 
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof LongData)) {
+            throw new ClassCastException("Expected LongData, not " +
+                                         data.getClass().getName());
+        }
+    }
+
     public TimeSeriesCollection plot(TimeSeriesCollection coll, String section,
                                      String name, boolean useLongName)
     {
@@ -254,6 +262,14 @@ class DoubleStat
 {
     private static final Pattern STAT_PAT =
         Pattern.compile("^(\\s+([^\\s:]+):?|\\s*(.+)\\s*:)\\s+(\\d+\\.?\\d*)\\s*$");
+
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof DoubleData)) {
+            throw new ClassCastException("Expected DoubleData, not " +
+                                         data.getClass().getName());
+        }
+    }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, String section,
                                      String name, boolean useLongName)
@@ -464,6 +480,14 @@ class MemoryStat
                         "\\s+(\\d+)([KMG]?)\\s+used," +
                         "\\s+(\\d+)([KMG]?)\\s+of" +
                         "\\s+(\\d+)([KMG]?)\\s+free\\.$");
+
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof MemoryData)) {
+            throw new ClassCastException("Expected MemoryData, not " +
+                                         data.getClass().getName());
+        }
+    }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, String section,
                                      String name, boolean useLongName)
@@ -737,6 +761,14 @@ class StringStat
     private static final Pattern STAT_PAT =
         Pattern.compile("^\\s+([^\\s:]+):?\\s+(.*)\\s*$");
 
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof StringData)) {
+            throw new ClassCastException("Expected StringData, not " +
+                                         data.getClass().getName());
+        }
+    }
+
     public TimeSeriesCollection plot(TimeSeriesCollection coll, String section,
                                      String name, boolean useLongName)
     {
@@ -862,6 +894,14 @@ class StrandStat
         }
 
         super.add(data);
+    }
+
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof StrandData)) {
+            throw new ClassCastException("Expected StrandData, not " +
+                                         data.getClass().getName());
+        }
     }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, String section,
@@ -1067,6 +1107,14 @@ class TriggerStat
     private static final Pattern STAT_PAT =
         Pattern.compile("^Trigger\\s+count:\\s+(\\S+)" +
                         "Trigger(\\d?\\d?)\\s+(\\d+)\\s+(\\d+\\.\\d+)\\s*$");
+
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof TriggerData)) {
+            throw new ClassCastException("Expected TriggerData, not " +
+                                         data.getClass().getName());
+        }
+    }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, String section,
                                      String name, boolean useLongName)
@@ -1398,6 +1446,14 @@ class TimingStat
         super.add(data);
     }
 
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof TimingData)) {
+            throw new ClassCastException("Expected TimingData, not " +
+                                         data.getClass().getName());
+        }
+    }
+
     double getValue(TimingPiece piece)
     {
         return piece.getProfileTime();
@@ -1713,7 +1769,19 @@ class LongListData
 
     boolean isEmpty()
     {
-        return vals == null || (vals.length == 1 && vals[0] == 0L);
+        if (vals == null || vals.length == 0) {
+            return true;
+        }
+
+        boolean allZero = true;
+        for (int i = 0; i < vals.length; i++) {
+            if (vals[0] != 0L) {
+                allZero = false;
+                break;
+            }
+        }
+
+        return allZero;
     }
 }
 
@@ -1785,6 +1853,14 @@ class ListStat
         }
 
         super.add(data);
+    }
+
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof ListData)) {
+            throw new ClassCastException("Expected ListData, not " +
+                                         data.getClass().getName());
+        }
     }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, String section,
@@ -1967,7 +2043,7 @@ class ListStat
         } else {
             try {
                 data = new LongListData(time, getLongArray(line, valStrs));
-            } catch (NumberFormatException nfe) {
+            } catch (StatParseException spe) {
                 // must not be a long value
                 data = null;
             }
@@ -1976,7 +2052,7 @@ class ListStat
                 try {
                     data = new DoubleListData(time, getDoubleArray(line,
                                                                    valStrs));
-                } catch (NumberFormatException nfe) {
+                } catch (StatParseException spe) {
                     // must be a string value
                     data = null;
                 }
