@@ -70,7 +70,7 @@ class InstanceBean
 
     public boolean hasGraphs()
     {
-        return includeAll || (graphNames != null && graphNames.size() > 0);
+        return graphNames != null && (includeAll || graphNames.size() > 0);
     }
 
     public boolean isIncludeAll()
@@ -80,8 +80,7 @@ class InstanceBean
 
     public boolean isChosen(String name)
     {
-        return (includeAll ||
-                (graphNames != null && graphNames.contains(name)));
+        return graphNames != null && (includeAll || graphNames.contains(name));
     }
 
     List list()
