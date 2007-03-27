@@ -39,9 +39,19 @@ class LongData
         return Long.toString(val);
     }
 
+    StatParent getParent()
+    {
+        return new LongStat();
+    }
+
     long getValue()
     {
         return val;
+    }
+
+    boolean isEmpty()
+    {
+        return val == 0L;
     }
 }
 
@@ -50,6 +60,14 @@ class LongStat
 {
     private static final Pattern STAT_PAT =
         Pattern.compile("^(\\s+([^\\s:]+)|\\s*(.+)\\s*):?\\s+(\\d+)L?\\s*$");
+
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof LongData)) {
+            throw new ClassCastException("Expected LongData, not " +
+                                         data.getClass().getName());
+        }
+    }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, String section,
                                      String name, boolean useLongName)
@@ -200,13 +218,8 @@ class LongStat
                                          " before time was set");
         }
 
-        StatParent parent = statData.getParent(sectionHost, sectionName, name);
-        if (parent == null) {
-            parent = statData.addParent(sectionHost, sectionName, name,
-                                        new LongStat());
-        }
-
-        parent.add(new LongData(time, val));
+        statData.add(sectionHost, sectionName, name,
+                     new LongData(time, val));
         return true;
     }
 }
@@ -228,9 +241,19 @@ class DoubleData
         return Double.toString(val);
     }
 
+    StatParent getParent()
+    {
+        return new DoubleStat();
+    }
+
     double getValue()
     {
         return val;
+    }
+
+    boolean isEmpty()
+    {
+        return val == 0.0;
     }
 }
 
@@ -239,6 +262,14 @@ class DoubleStat
 {
     private static final Pattern STAT_PAT =
         Pattern.compile("^(\\s+([^\\s:]+):?|\\s*(.+)\\s*:)\\s+(\\d+\\.?\\d*)\\s*$");
+
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof DoubleData)) {
+            throw new ClassCastException("Expected DoubleData, not " +
+                                         data.getClass().getName());
+        }
+    }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, String section,
                                      String name, boolean useLongName)
@@ -390,13 +421,8 @@ class DoubleStat
                                          " before time was set");
         }
 
-        StatParent parent = statData.getParent(sectionHost, sectionName, name);
-        if (parent == null) {
-            parent = statData.addParent(sectionHost, sectionName, name,
-                                        new DoubleStat());
-        }
-
-        parent.add(new DoubleData(time, val));
+        statData.add(sectionHost, sectionName, name,
+                     new DoubleData(time, val));
         return true;
     }
 }
@@ -430,9 +456,19 @@ class MemoryData
         return freeMem;
     }
 
+    StatParent getParent()
+    {
+        return new MemoryStat();
+    }
+
     long getUsedMemory()
     {
         return usedMem;
+    }
+
+    boolean isEmpty()
+    {
+        return usedMem == 0L && freeMem == 0L;
     }
 }
 
@@ -444,6 +480,14 @@ class MemoryStat
                         "\\s+(\\d+)([KMG]?)\\s+used," +
                         "\\s+(\\d+)([KMG]?)\\s+of" +
                         "\\s+(\\d+)([KMG]?)\\s+free\\.$");
+
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof MemoryData)) {
+            throw new ClassCastException("Expected MemoryData, not " +
+                                         data.getClass().getName());
+        }
+    }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, String section,
                                      String name, boolean useLongName)
@@ -667,13 +711,8 @@ class MemoryStat
                                          " stat before time was set");
         }
 
-        StatParent parent = statData.getParent(sectionHost, sectionName, name);
-        if (parent == null) {
-            parent = statData.addParent(sectionHost, sectionName, name,
-                                        new MemoryStat());
-        }
-
-        parent.add(new MemoryData(time, memVals));
+        statData.add(sectionHost, sectionName, name,
+                     new MemoryData(time, memVals));
         return true;
     }
 
@@ -700,9 +739,19 @@ class StringData
         return "\"" + val + "\"";
     }
 
+    StatParent getParent()
+    {
+        return new StringStat();
+    }
+
     String getValue()
     {
         return val;
+    }
+
+    boolean isEmpty()
+    {
+        return val == null || val.length() == 0;
     }
 }
 
@@ -711,6 +760,14 @@ class StringStat
 {
     private static final Pattern STAT_PAT =
         Pattern.compile("^\\s+([^\\s:]+):?\\s+(.*)\\s*$");
+
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof StringData)) {
+            throw new ClassCastException("Expected StringData, not " +
+                                         data.getClass().getName());
+        }
+    }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, String section,
                                      String name, boolean useLongName)
@@ -765,13 +822,8 @@ class StringStat
                                          " before time was set");
         }
 
-        StatParent parent = statData.getParent(sectionHost, sectionName, name);
-        if (parent == null) {
-            parent = statData.addParent(sectionHost, sectionName, name,
-                                        new StringStat());
-        }
-
-        parent.add(new StringData(time, val));
+        statData.add(sectionHost, sectionName, name,
+                     new StringData(time, val));
         return true;
     }
 }
@@ -806,9 +858,20 @@ class StrandData
         return depths.length;
     }
 
+    StatParent getParent()
+    {
+        return new StrandStat(depths.length);
+    }
+
     long getStrand(int i)
     {
         return depths[i];
+    }
+
+    boolean isEmpty()
+    {
+        return depths == null || depths.length == 0 ||
+            (depths.length == 1 && depths[0] == 0);
     }
 }
 
@@ -833,6 +896,14 @@ class StrandStat
         super.add(data);
     }
 
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof StrandData)) {
+            throw new ClassCastException("Expected StrandData, not " +
+                                         data.getClass().getName());
+        }
+    }
+
     public TimeSeriesCollection plot(TimeSeriesCollection coll, String section,
                                      String name, boolean useLongName)
     {
@@ -843,7 +914,7 @@ class StrandStat
             prefix = section + " " + name + " ";
         }
 
-        TimeSeries series[] = new TimeSeries[numStrands];
+        TimeSeries[] series = new TimeSeries[numStrands];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + "Strand " + i, Second.class);
             coll.addSeries(series[i]);
@@ -866,7 +937,7 @@ class StrandStat
     {
         final String prefix = section + " " + name + " ";
 
-        TimeSeries series[] = new TimeSeries[numStrands];
+        TimeSeries[] series = new TimeSeries[numStrands];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + "Strand " + i, Second.class);
             coll.addSeries(series[i]);
@@ -901,7 +972,7 @@ class StrandStat
     {
         final String prefix = section + " " + name + " ";
 
-        TimeSeries series[] = new TimeSeries[numStrands];
+        TimeSeries[] series = new TimeSeries[numStrands];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + "Strand " + i, Second.class);
             coll.addSeries(series[i]);
@@ -972,14 +1043,9 @@ class StrandStat
                                          " stat before time was set");
         }
 
-        StatParent parent = statData.getParent(sectionHost, sectionName, name);
-        if (parent == null) {
-            parent = statData.addParent(sectionHost, sectionName, name,
-                                        new StrandStat(vals.length));
-        }
-
         try {
-            parent.add(new StrandData(time, vals));
+            statData.add(sectionHost, sectionName, name,
+                         new StrandData(time, vals));
         } catch (Error err) {
             System.err.println("Bad strands for " + sectionHost + "/" +
                                sectionName + "/" + name + " " + time + ": " +
@@ -1019,9 +1085,19 @@ class TriggerData
         return dVal;
     }
 
+    StatParent getParent()
+    {
+        return new TriggerStat();
+    }
+
     long getValue()
     {
         return val;
+    }
+
+    boolean isEmpty()
+    {
+        return val == 0L && dVal == 0.0;
     }
 }
 
@@ -1031,6 +1107,14 @@ class TriggerStat
     private static final Pattern STAT_PAT =
         Pattern.compile("^Trigger\\s+count:\\s+(\\S+)" +
                         "Trigger(\\d?\\d?)\\s+(\\d+)\\s+(\\d+\\.\\d+)\\s*$");
+
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof TriggerData)) {
+            throw new ClassCastException("Expected TriggerData, not " +
+                                         data.getClass().getName());
+        }
+    }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, String section,
                                      String name, boolean useLongName)
@@ -1233,13 +1317,8 @@ class TriggerStat
                                          "/" + dVal + " before time was set");
         }
 
-        StatParent parent = statData.getParent(sectionHost, sectionName, name);
-        if (parent == null) {
-            parent = statData.addParent(sectionHost, sectionName, name,
-                                        new TriggerStat());
-        }
-
-        parent.add(new TriggerData(time, val, dVal));
+        statData.add(sectionHost, sectionName, name,
+                     new TriggerData(time, val, dVal));
         return true;
     }
 }
@@ -1322,9 +1401,19 @@ class TimingData
         return buf.toString();
     }
 
+    StatParent getParent()
+    {
+        return new TimingStat();
+    }
+
     Iterator iterator()
     {
         return list.iterator();
+    }
+
+    boolean isEmpty()
+    {
+        return false;
     }
 }
 
@@ -1336,25 +1425,10 @@ class TimingStat
     private static final Pattern PIECE_PAT =
         Pattern.compile("\\s*([^:]+):\\s(\\d+)/(\\d+)=(\\d+)#(\\d+\\.?\\d*%)");
 
-    private static final int TIMING_TIME = 0;
-    private static final int TIMING_CALLS = 1;
-    private static final int TIMING_AVERAGE = 2;
-    private static final int TIMING_DELTA = 3;
-    private static final int NUM_TIMINGS = 4;
-
-    private static final String[] TIMING_NAME = new String[] {
-        "Total Profiled Time",
-        "Total Profiled Calls",
-        "Average Profiled Time",
-        "Delta Profiled Time",
-    };
-
-    private int timingType;
     private ArrayList titles = new ArrayList();
 
-    TimingStat(int timingType)
+    TimingStat()
     {
-        this.timingType = timingType;
     }
 
     void add(BaseData data)
@@ -1372,21 +1446,17 @@ class TimingStat
         super.add(data);
     }
 
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof TimingData)) {
+            throw new ClassCastException("Expected TimingData, not " +
+                                         data.getClass().getName());
+        }
+    }
+
     double getValue(TimingPiece piece)
     {
-        switch (timingType) {
-        case TIMING_TIME:
-        case TIMING_DELTA:
-            return piece.getProfileTime();
-        case TIMING_CALLS:
-            return piece.getProfileCalls();
-        case TIMING_AVERAGE:
-            return piece.getAverageTime();
-        default:
-            break;
-        }
-
-        throw new Error("Unknown timing type #" + timingType);
+        return piece.getProfileTime();
     }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, String section,
@@ -1399,7 +1469,7 @@ class TimingStat
             prefix = section + " " + name + " ";
         }
 
-        TimeSeries series[] = new TimeSeries[titles.size()];
+        TimeSeries[] series = new TimeSeries[titles.size()];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + titles.get(i), Second.class);
             coll.addSeries(series[i]);
@@ -1422,11 +1492,10 @@ class TimingStat
                 int idx = titles.indexOf(piece.getTitle());
 
                 double val = getValue(piece);
-                if (timingType == TIMING_DELTA) {
-                    double tmpVal = val;
-                    val = val - prevVal[idx];
-                    prevVal[idx] = tmpVal;
-                }
+
+                double tmpVal = val;
+                val = val - prevVal[idx];
+                prevVal[idx] = tmpVal;
 
                 series[idx].add(data.getTime().getSecond(), val);
             }
@@ -1446,7 +1515,7 @@ class TimingStat
     {
         final String prefix = section + " " + name + " ";
 
-        TimeSeries series[] = new TimeSeries[titles.size()];
+        TimeSeries[] series = new TimeSeries[titles.size()];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + titles.get(i), Second.class);
             coll.addSeries(series[i]);
@@ -1477,11 +1546,10 @@ class TimingStat
                 int idx = titles.indexOf(piece.getTitle());
 
                 double val = getValue(piece);
-                if (timingType == TIMING_DELTA) {
-                    double tmpVal = val;
-                    val = val - prevVal[idx];
-                    prevVal[idx] = tmpVal;
-                }
+
+                double tmpVal = val;
+                val = val - prevVal[idx];
+                prevVal[idx] = tmpVal;
 
                 if (val < minVal[idx]) {
                     minVal[idx] = val;
@@ -1512,11 +1580,10 @@ class TimingStat
                 int idx = titles.indexOf(piece.getTitle());
 
                 double val = getValue(piece);
-                if (timingType == TIMING_DELTA) {
-                    double tmpVal = val;
-                    val = val - prevVal[idx];
-                    prevVal[idx] = tmpVal;
-                }
+
+                double tmpVal = val;
+                val = val - prevVal[idx];
+                prevVal[idx] = tmpVal;
 
                 double dVal = (val - minVal[idx]) / div[idx];
                 series[idx].add(data.getTime().getSecond(), dVal);
@@ -1562,8 +1629,6 @@ class TimingStat
             final String title = matcher.group(1);
             final String cTime = matcher.group(2);
             final String num = matcher.group(3);
-            final String avg = matcher.group(4);
-            final String pct = matcher.group(5);
 
             TimingPiece data;
             try {
@@ -1586,21 +1651,8 @@ class TimingStat
             return false;
         }
 
-        TimingData data = new TimingData(time, timing);
-
-        for (int i = 0; i < NUM_TIMINGS; i++) {
-            final String tName = name + ":" + TIMING_NAME[i];
-
-            StatParent parent =
-                statData.getParent(sectionHost, sectionName, tName);
-            if (parent == null) {
-                parent = statData.addParent(sectionHost, sectionName, tName,
-                                            new TimingStat(i));
-            }
-
-            parent.add(data);
-        }
-
+        statData.add(sectionHost, sectionName, name,
+                     new TimingData(time, timing));
         return true;
     }
 
@@ -1613,8 +1665,6 @@ class TimingStat
 abstract class ListData
     extends BaseData
 {
-    private long[] vals;
-
     ListData(ChartTime time)
     {
         super(time);
@@ -1622,6 +1672,12 @@ abstract class ListData
 
     abstract String getDataString();
     abstract int getNumEntries();
+
+    StatParent getParent()
+    {
+        return new ListStat(getNumEntries());
+    }
+
     abstract double getRawValue(int i);
 }
 
@@ -1664,6 +1720,11 @@ class DoubleListData
     {
         return vals[i];
     }
+
+    boolean isEmpty()
+    {
+        return vals == null || (vals.length == 1 && vals[0] == 0.0);
+    }
 }
 
 class LongListData
@@ -1704,6 +1765,23 @@ class LongListData
     double getRawValue(int i)
     {
         return (double) vals[i];
+    }
+
+    boolean isEmpty()
+    {
+        if (vals == null || vals.length == 0) {
+            return true;
+        }
+
+        boolean allZero = true;
+        for (int i = 0; i < vals.length; i++) {
+            if (vals[0] != 0L) {
+                allZero = false;
+                break;
+            }
+        }
+
+        return allZero;
     }
 }
 
@@ -1746,6 +1824,11 @@ class StringListData
     {
         return 0.0;
     }
+
+    boolean isEmpty()
+    {
+        return vals == null || (vals.length == 1 && vals[0] == null);
+    }
 }
 
 class ListStat
@@ -1772,6 +1855,14 @@ class ListStat
         super.add(data);
     }
 
+    public void checkDataType(BaseData data)
+    {
+        if (!(data instanceof ListData)) {
+            throw new ClassCastException("Expected ListData, not " +
+                                         data.getClass().getName());
+        }
+    }
+
     public TimeSeriesCollection plot(TimeSeriesCollection coll, String section,
                                      String name, boolean useLongName)
     {
@@ -1782,7 +1873,7 @@ class ListStat
             prefix = section + " " + name + " ";
         }
 
-        TimeSeries series[] = new TimeSeries[numEntries];
+        TimeSeries[] series = new TimeSeries[numEntries];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + "List " + i, Second.class);
             coll.addSeries(series[i]);
@@ -1805,7 +1896,7 @@ class ListStat
     {
         final String prefix = section + " " + name + " ";
 
-        TimeSeries series[] = new TimeSeries[numEntries];
+        TimeSeries[] series = new TimeSeries[numEntries];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + "List " + i, Second.class);
             coll.addSeries(series[i]);
@@ -1840,7 +1931,7 @@ class ListStat
     {
         final String prefix = section + " " + name + " ";
 
-        TimeSeries series[] = new TimeSeries[numEntries];
+        TimeSeries[] series = new TimeSeries[numEntries];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + "List " + i, Second.class);
             coll.addSeries(series[i]);
@@ -1883,7 +1974,7 @@ class ListStat
         return coll;
     }
 
-    private static final double[] getDoubleArray(String line, String[] valStrs)
+    private static double[] getDoubleArray(String line, String[] valStrs)
         throws StatParseException
     {
         double[] vals = new double[valStrs.length];
@@ -1900,7 +1991,7 @@ class ListStat
         return vals;
     }
 
-    private static final long[] getLongArray(String line, String[] valStrs)
+    private static long[] getLongArray(String line, String[] valStrs)
         throws StatParseException
     {
         long[] vals = new long[valStrs.length];
@@ -1936,12 +2027,6 @@ class ListStat
 
         String[] valStrs = matcher.group(2).split(", ");
 
-        StatParent parent = statData.getParent(sectionHost, sectionName, name);
-        if (parent == null) {
-            parent = statData.addParent(sectionHost, sectionName, name,
-                                        new ListStat(valStrs.length));
-        }
-
         // strip quote marks
         for (int i = 0; i < valStrs.length; i++) {
             if (valStrs[i].startsWith("'") && valStrs[i].endsWith("'")) {
@@ -1957,19 +2042,17 @@ class ListStat
             data = new LongListData(time, new long[0]);
         } else {
             try {
-                long lVal = Long.parseLong(valStrs[0]);
                 data = new LongListData(time, getLongArray(line, valStrs));
-            } catch (NumberFormatException nfe) {
+            } catch (StatParseException spe) {
                 // must not be a long value
                 data = null;
             }
 
             if (data == null) {
                 try {
-                    double dVal = Double.parseDouble(valStrs[0]);
                     data = new DoubleListData(time, getDoubleArray(line,
                                                                    valStrs));
-                } catch (NumberFormatException nfe) {
+                } catch (StatParseException spe) {
                     // must be a string value
                     data = null;
                 }
@@ -1977,22 +2060,14 @@ class ListStat
 
             if (data == null) {
                 data = new StringListData(time, valStrs);
+                if (data == null) {
+                    System.err.println("Cannot parse " + name + " list data");
+                    return true;
+                }
             }
         }
 
-
-        if (data == null) {
-            System.err.println("Cannot parse " + name + " list data");
-        } else {
-            parent.add(data);
-/*
-        } catch (Error err) {
-            System.err.println("Bad list entries for " + sectionHost + "/" +
-                               sectionName + "/" + name + " " + time + ": " +
-                               err.getMessage());
-*/
-        }
-
+        statData.add(sectionHost, sectionName, name, data);
         return true;
     }
 
@@ -2035,7 +2110,7 @@ abstract class BaseParser
     }
 }
 
-class BombardParser
+final class BombardParser
     extends BaseParser
 {
     private static final Pattern PARSE_PAT =
@@ -2118,7 +2193,7 @@ class BombardParser
     }
 }
 
-class EBLogParser
+final class EBLogParser
     extends BaseParser
 {
     private static final Pattern PARSE_PAT =
@@ -2274,13 +2349,13 @@ class EBLogParser
     }
 }
 
-class PDAQParser
+final class PDAQParser
     extends BaseParser
 {
     private static final Pattern BEAN_PAT =
         Pattern.compile("^Bean\\s+(\\S+)\\s*$");
 
-    private static final SimpleDateFormat dateFmt;
+    private static SimpleDateFormat dateFmt;
 
     static {
         dateFmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -2436,7 +2511,6 @@ public class StatData
         }
 
         BaseParser parser = null;
-        Date time = null;
 
         BufferedReader rdr = inputSrc.getReader();
         while (true) {
@@ -2485,8 +2559,7 @@ public class StatData
         }
     }
 
-    public StatParent addParent(String host, String section, String name,
-                                StatParent parent)
+    public void add(String host, String section, String name, BaseData datum)
     {
         String key;
         if (host == null) {
@@ -2495,23 +2568,40 @@ public class StatData
             key = host + ":" + section;
         }
 
-        return addParent(key, name, parent);
+        add(key, name, datum);
     }
 
-    public StatParent addParent(String section, String name, StatParent parent)
+    public void add(String section, String name, BaseData datum)
     {
         if (!sectionMap.containsKey(section)) {
             sectionMap.put(section, new HashMap());
         }
 
+        StatParent parent;
+        boolean isCreated;
+
         HashMap statMap = (HashMap) sectionMap.get(section);
         if (statMap.containsKey(name)) {
-            throw new Error("Parent for " + section + "/" + name +
-                            " already exists");
+            parent = (StatParent) statMap.get(name);
+            isCreated = false;
+        } else {
+            parent = datum.getParent();
+            statMap.put(name, parent);
+            isCreated = true;
         }
 
-        statMap.put(name, parent);
-        return parent;
+        try {
+            parent.add(datum);
+        } catch (ClassCastException cce) {
+            if (isCreated || !parent.isEmpty()) {
+                throw cce;
+            }
+
+            parent = datum.getParent();
+            parent.add(datum);
+
+            statMap.put(name, parent);
+        }
     }
 
     public List getSectionNames(String section)
@@ -2545,32 +2635,6 @@ public class StatData
         }
 
         return (StatParent) nameMap.get(name);
-    }
-
-    public StatParent getParent(String host, String section, String name)
-    {
-        String key;
-        if (host == null) {
-            key = section;
-        } else {
-            key = host + ":" + section;
-        }
-
-        return getParent(key, name);
-    }
-
-    public StatParent getParent(String section, String name)
-    {
-        if (!sectionMap.containsKey(section)) {
-            return null;
-        }
-
-        HashMap statMap = (HashMap) sectionMap.get(section);
-        if (!statMap.containsKey(name)) {
-            return null;
-        }
-
-        return (StatParent) statMap.get(name);
     }
 
     public String toString()
