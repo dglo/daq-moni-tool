@@ -15,7 +15,16 @@ public abstract class StatParent
             dataList = new ArrayList();
         }
 
+        checkDataType(data);
+
         dataList.add(data);
+    }
+
+    public abstract void checkDataType(BaseData data);
+
+    public boolean isEmpty()
+    {
+        return dataList.size() < 2;
     }
 
     public Iterator iterator()
