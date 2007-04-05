@@ -2354,6 +2354,9 @@ final class PDAQParser
 {
     private static final Pattern BEAN_PAT =
         Pattern.compile("^Bean\\s+(\\S+)\\s*$");
+    private static final Pattern BEANDATE_PAT =
+        Pattern.compile("^(\\S+):\\s+(\\d\\d\\d\\d-\\d\\d-\\d\\d\\s" +
+                        "\\d\\d:\\d\\d:\\d\\d.\\d+):\\s*$");
 
     private static SimpleDateFormat dateFmt;
 
@@ -2440,21 +2443,6 @@ final class PDAQParser
             return true;
         }
 
-        if (line.startsWith(sectionName + ": ") && line.endsWith(":")) {
-            String dateStr = line.substring(sectionName.length() + 2,
-                                            line.length() - 1);
-            Date myDate;
-            try {
-                myDate = dateFmt.parse(dateStr);
-            } catch (ParseException pe) {
-                System.err.println("Ignoring bad date " + dateStr);
-                return false;
-            }
-
-            setTime(myDate.getTime());
-            return true;
-        }
-
         throw new StatParseException("Unknown line \"" + line + "\"");
     }
 
@@ -2466,9 +2454,12 @@ final class PDAQParser
     static PDAQParser matchStart(PDAQParser parser, GraphSource inputSrc,
                                  String line)
     {
-        Matcher matcher = BEAN_PAT.matcher(line);
+        Matcher matcher = BEANDATE_PAT.matcher(line);
         if (!matcher.find()) {
-            return null;
+            matcher = BEAN_PAT.matcher(line);
+            if (!matcher.find()) {
+                return null;
+            }
         }
 
         String sectionHost;
@@ -2477,8 +2468,8 @@ final class PDAQParser
         } else {
             sectionHost = inputSrc.toString();
             if (sectionHost.endsWith(".moni")) {
-                sectionHost = sectionHost.substring(0,
-                                                    sectionHost.length() - 5);
+                sectionHost =
+                    sectionHost.substring(0, sectionHost.length() - 5);
             }
         }
 
@@ -2489,6 +2480,20 @@ final class PDAQParser
         } else {
             parser.sectionHost = sectionHost;
             parser.sectionName = sectionName;
+        }
+
+        if (matcher.groupCount() > 1) {
+            Date myDate;
+            try {
+                myDate = dateFmt.parse(matcher.group(2));
+            } catch (ParseException pe) {
+                System.err.println("Ignoring bad date " + matcher.group(2));
+                myDate = null;
+            }
+
+            if (myDate != null) {
+                parser.setTime(myDate.getTime());
+            }
         }
 
         return parser;
