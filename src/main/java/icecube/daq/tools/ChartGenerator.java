@@ -48,8 +48,8 @@ public class ChartGenerator
                    ChartChoices choices)
     {
         if (choices.getType() == ChartChoices.SHOW_ALL ||
-                   choices.getType() == ChartChoices.SHOW_SELECTED ||
-                   choices.getType() == ChartChoices.SHOW_DELTA)
+            choices.getType() == ChartChoices.SHOW_SELECTED ||
+            choices.getType() == ChartChoices.SHOW_DELTA)
         {
             showMultiple(compList, statData, choices);
         } else if (choices.getType() == ChartChoices.SHOW_COMBINED ||
