@@ -19,32 +19,7 @@ public class ChartChoices
 
     public void dump()
     {
-        System.out.println((filterBoring ? "" : "!") + "filterBoring");
-        System.out.println((hideLegends ? "" : "!") + "hideLegends");
-        System.out.println((showPoints ? "" : "!") + "showPoints");
-
-        String showName;
-        switch (type) {
-        case SHOW_ALL:
-            showName = "show ALL";
-            break;
-        case SHOW_SELECTED:
-            showName = "show SELECTED";
-            break;
-        case SHOW_COMBINED:
-            showName = "show COMBINED";
-            break;
-        case SHOW_SCALED:
-            showName = "show SCALED";
-            break;
-        case SHOW_DELTA:
-            showName = "show DELTA";
-            break;
-        default:
-            showName = "Unknown type #" + type;
-            break;
-        }
-        System.out.println(showName);
+        System.out.println(toString());
     }
 
     public boolean filterBoring()
@@ -86,5 +61,38 @@ public class ChartChoices
     {
         return showPoints;
     }
-}
 
+
+    public String toString()
+    {
+        StringBuffer buf = new StringBuffer("ChartChoices[");
+        buf.append(filterBoring ? "" : "!").append("filterBoring ");
+        buf.append(hideLegends ? "" : "!").append("hideLegends ");
+        buf.append(showPoints ? "" : "!").append("showPoints ");
+
+        String showName;
+        switch (type) {
+        case SHOW_ALL:
+            showName = "show ALL";
+            break;
+        case SHOW_SELECTED:
+            showName = "show SELECTED";
+            break;
+        case SHOW_COMBINED:
+            showName = "show COMBINED";
+            break;
+        case SHOW_SCALED:
+            showName = "show SCALED";
+            break;
+        case SHOW_DELTA:
+            showName = "show DELTA";
+            break;
+        default:
+            showName = "Unknown type #" + type;
+            break;
+        }
+        buf.append(showName).append("]");
+
+        return buf.toString();
+    }
+}
