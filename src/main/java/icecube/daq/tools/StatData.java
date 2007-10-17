@@ -59,7 +59,7 @@ class LongStat
     extends StatParent
 {
     private static final Pattern STAT_PAT =
-        Pattern.compile("^(\\s+([^\\s:]+)|\\s*(.+)\\s*):?\\s+(\\d+)L?\\s*$");
+        Pattern.compile("^(\\s+([^\\s:]+)|\\s*(.+)\\s*):?\\s+([\\-\\+]?\\d+)L?\\s*$");
 
     public void checkDataType(BaseData data)
     {
@@ -2599,7 +2599,8 @@ public class StatData
             parent.add(datum);
         } catch (ClassCastException cce) {
             if (isCreated || !parent.isEmpty()) {
-                throw cce;
+                throw new RuntimeException("Cannot add " + section + ":" +
+                                           name + " datum " + datum, cce);
             }
 
             parent = datum.getParent();
