@@ -707,27 +707,36 @@ public class DAQMoniChart
 
             final int minusIdx = section.indexOf('-');
             final int colonIdx = section.indexOf(':', minusIdx + 1);
-            if (colonIdx < 0 || minusIdx < 0) {
+            if (colonIdx < 0) {
                 System.err.println("Bad section name \"" + section + "\"");
                 continue;
             }
 
-            String compName = section.substring(0, minusIdx);
-            String beanName = section.substring(colonIdx + 1);
-
+            String compName, beanName;
             int instNum;
-            if (minusIdx == colonIdx - 2 &&
-                section.charAt(minusIdx + 1) == '0')
-            {
+
+            if (minusIdx < 0) {
+                compName = section.substring(0, colonIdx);
                 instNum = 0;
+                beanName = section.substring(colonIdx + 1);
             } else {
-                String numStr = section.substring(minusIdx + 1, colonIdx);
-                try {
-                    instNum = Integer.parseInt(numStr);
-                } catch (NumberFormatException nfe) {
-                    System.err.println("Bad instance number \"" + numStr +
-                                       "\" in section \"" + section + "\"");
-                    continue;
+                compName = section.substring(0, minusIdx);
+                beanName = section.substring(colonIdx + 1);
+
+                if (minusIdx == colonIdx - 2 &&
+                    section.charAt(minusIdx + 1) == '0')
+                {
+                    instNum = 0;
+                } else {
+                    String numStr = section.substring(minusIdx + 1, colonIdx);
+                    try {
+                        instNum = Integer.parseInt(numStr);
+                    } catch (NumberFormatException nfe) {
+                        System.err.println("Bad instance number \"" + numStr +
+                                           "\" in section \"" + section +
+                                           "\"");
+                        continue;
+                    }
                 }
             }
 
