@@ -438,15 +438,7 @@ public class DAQMoniChart
                 statData = new StatData();
             }
 
-            try {
-                statData.addData(new GraphSource(f));
-            } catch (IOException ioe) {
-                System.err.println("Couldn't load \"" + f + "\":");
-                ioe.printStackTrace();
-                continue;
-            }
-
-            System.out.println(f + ":");
+            addSource(statData, f);
         }
 
         if (statData == null) {
@@ -503,6 +495,25 @@ public class DAQMoniChart
             panel.add(gridPanel, BorderLayout.CENTER);
 
             pane.addTab(instBean.getName(), panel);
+        }
+    }
+
+    private static final void addSource(StatData statData, File f)
+    {
+        if (f.isDirectory()) {
+            File[] list = f.listFiles();
+            for (int i = 0; i < list.length; i++) {
+                addSource(statData, list[i]);
+            }
+        } else {
+            System.out.println(f + ":");
+
+            try {
+                statData.addData(new GraphSource(f));
+            } catch (IOException ioe) {
+                System.err.println("Couldn't load \"" + f + "\":");
+                ioe.printStackTrace();
+            }
         }
     }
 
