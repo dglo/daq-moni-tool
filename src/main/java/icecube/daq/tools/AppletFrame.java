@@ -23,21 +23,16 @@ import java.applet.Applet;
 import java.applet.AppletContext;
 import java.applet.AppletStub;
 import java.applet.AudioClip;
-
 import java.awt.Event;
 import java.awt.Frame;
 import java.awt.Image;
 import java.awt.Toolkit;
-
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
-
 import java.io.File;
 import java.io.InputStream;
-
 import java.net.MalformedURLException;
 import java.net.URL;
-
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
