@@ -2604,6 +2604,9 @@ public class StatData
             parent.add(datum);
 
             statMap.put(name, parent);
+        } catch (Error err) {
+            System.err.println("Cannot add " + section + ":" + name +
+                               " datum " + datum + ": " +  err.getMessage());
         }
     }
 
