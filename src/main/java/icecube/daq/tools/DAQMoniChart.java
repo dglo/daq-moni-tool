@@ -4,15 +4,12 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-
 import java.io.File;
 import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -438,15 +435,7 @@ public class DAQMoniChart
                 statData = new StatData();
             }
 
-            try {
-                statData.addData(new GraphSource(f));
-            } catch (IOException ioe) {
-                System.err.println("Couldn't load \"" + f + "\":");
-                ioe.printStackTrace();
-                continue;
-            }
-
-            System.out.println(f + ":");
+            addSource(statData, f);
         }
 
         if (statData == null) {
@@ -503,6 +492,25 @@ public class DAQMoniChart
             panel.add(gridPanel, BorderLayout.CENTER);
 
             pane.addTab(instBean.getName(), panel);
+        }
+    }
+
+    private static final void addSource(StatData statData, File f)
+    {
+        if (f.isDirectory()) {
+            File[] list = f.listFiles();
+            for (int i = 0; i < list.length; i++) {
+                addSource(statData, list[i]);
+            }
+        } else {
+            System.out.println(f + ":");
+
+            try {
+                statData.addData(new GraphSource(f));
+            } catch (IOException ioe) {
+                System.err.println("Couldn't load \"" + f + "\":");
+                ioe.printStackTrace();
+            }
         }
     }
 
@@ -707,27 +715,36 @@ public class DAQMoniChart
 
             final int minusIdx = section.indexOf('-');
             final int colonIdx = section.indexOf(':', minusIdx + 1);
-            if (colonIdx < 0 || minusIdx < 0) {
+            if (colonIdx < 0) {
                 System.err.println("Bad section name \"" + section + "\"");
                 continue;
             }
 
-            String compName = section.substring(0, minusIdx);
-            String beanName = section.substring(colonIdx + 1);
-
+            String compName, beanName;
             int instNum;
-            if (minusIdx == colonIdx - 2 &&
-                section.charAt(minusIdx + 1) == '0')
-            {
+
+            if (minusIdx < 0) {
+                compName = section.substring(0, colonIdx);
                 instNum = 0;
+                beanName = section.substring(colonIdx + 1);
             } else {
-                String numStr = section.substring(minusIdx + 1, colonIdx);
-                try {
-                    instNum = Integer.parseInt(numStr);
-                } catch (NumberFormatException nfe) {
-                    System.err.println("Bad instance number \"" + numStr +
-                                       "\" in section \"" + section + "\"");
-                    continue;
+                compName = section.substring(0, minusIdx);
+                beanName = section.substring(colonIdx + 1);
+
+                if (minusIdx == colonIdx - 2 &&
+                    section.charAt(minusIdx + 1) == '0')
+                {
+                    instNum = 0;
+                } else {
+                    String numStr = section.substring(minusIdx + 1, colonIdx);
+                    try {
+                        instNum = Integer.parseInt(numStr);
+                    } catch (NumberFormatException nfe) {
+                        System.err.println("Bad instance number \"" + numStr +
+                                           "\" in section \"" + section +
+                                           "\"");
+                        continue;
+                    }
                 }
             }
 
