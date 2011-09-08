@@ -56,7 +56,8 @@ class LongStat
     extends StatParent
 {
     private static final Pattern STAT_PAT =
-        Pattern.compile("^(\\s+([^\\s:]+)|\\s*(.+)\\s*):?\\s+([\\-\\+]?\\d+)L?\\s*$");
+        Pattern.compile(
+            "^(\\s+([^\\s:]+)|\\s*(.+)\\s*):?\\s+([\\-\\+]?\\d+)L?\\s*$");
 
     public void checkDataType(BaseData data)
     {
@@ -258,7 +259,8 @@ class DoubleStat
     extends StatParent
 {
     private static final Pattern STAT_PAT =
-        Pattern.compile("^(\\s+([^\\s:]+):?|\\s*(.+)\\s*:)\\s+(\\d+\\.?\\d*)\\s*$");
+        Pattern.compile(
+            "^(\\s+([^\\s:]+):?|\\s*(.+)\\s*:)\\s+(\\d+\\.?\\d*)\\s*$");
 
     public void checkDataType(BaseData data)
     {
@@ -2111,7 +2113,8 @@ final class BombardParser
     extends BaseParser
 {
     private static final Pattern PARSE_PAT =
-        Pattern.compile("^\\.*((\\S+#\\d+)\\s+)?(\\d+):\\s+(\\S*)MonitoringData:\\s*$");
+        Pattern.compile(
+            "^\\.*((\\S+#\\d+)\\s+)?(\\d+):\\s+(\\S*)MonitoringData:\\s*$");
 
     private String sectionName;
 
@@ -2648,7 +2651,7 @@ public class StatData
         StringBuffer buf = new StringBuffer("StatData[");
 
         boolean needComma = false;
-        for (Iterator iter = sectionMap.keySet().iterator(); iter.hasNext(); ) {
+        for (Iterator iter = sectionMap.keySet().iterator(); iter.hasNext();) {
             if (needComma) {
                 buf.append(',');
             } else {

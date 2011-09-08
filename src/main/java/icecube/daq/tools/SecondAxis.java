@@ -121,7 +121,8 @@ class SecondTickUnit
      *
      * @return The formatted date.
      */
-    public String dateToString(Date date) {
+    public String dateToString(Date date) 
+    {
         long milliseconds = date.getTime();
         long secs = milliseconds / 1000;
         if (!showMilliseconds) {
@@ -198,31 +199,32 @@ class SecondTickUnit
      *
      * @return The number of milliseconds.
      */
-    private static long getMillisecondCount(int unit, int count) {
+    private static long getMillisecondCount(int unit, int count) 
+    {
 
         switch (unit) {
-            case (YEAR):
-                return (365L * 24L * 60L * 60L * 1000L) * count;
-            case (MONTH):
-                return (31L * 24L * 60L * 60L * 1000L) * count;
-            case (DAY):
-                return (24L * 60L * 60L * 1000L) * count;
-            case (HOUR):
-                return (60L * 60L * 1000L) * count;
-            case (MINUTE):
-                return (60L * 1000L) * count;
-            case (SECOND):
-                return 1000L * count;
-            case (MILLISECOND):
-                return count;
-            default:
-                throw new IllegalArgumentException(
-                    "DateTickUnit.getMillisecondCount() : unit must "
-                    + "be one of the constants YEAR, MONTH, DAY, HOUR, MINUTE, "
-                    + "SECOND or MILLISECOND defined in the DateTickUnit "
-                    + "class. Do *not* use the constants defined in "
-                    + "java.util.Calendar."
-                );
+        case (YEAR):
+            return (365L * 24L * 60L * 60L * 1000L) * count;
+        case (MONTH):
+            return (31L * 24L * 60L * 60L * 1000L) * count;
+        case (DAY):
+            return (24L * 60L * 60L * 1000L) * count;
+        case (HOUR):
+            return (60L * 60L * 1000L) * count;
+        case (MINUTE):
+            return (60L * 1000L) * count;
+        case (SECOND):
+            return 1000L * count;
+        case (MILLISECOND):
+            return count;
+        default:
+            throw new IllegalArgumentException(
+                "DateTickUnit.getMillisecondCount() : unit must " +
+                "be one of the constants YEAR, MONTH, DAY, HOUR, MINUTE, " +
+                "SECOND or MILLISECOND defined in the DateTickUnit " +
+                "class. Do *not* use the constants defined in " +
+                "java.util.Calendar."
+            );
         }
     }
 
@@ -303,11 +305,11 @@ class SecondAxis
 
     /** The default minimum auto range size. */
     public static final double
-        DEFAULT_AUTO_RANGE_MINIMUM_SIZE_IN_MILLISECONDS = 2.0;
+    DEFAULT_AUTO_RANGE_MINIMUM_SIZE_IN_MILLISECONDS = 2.0;
 
     /** The default date tick unit. */
     public static final SecondTickUnit DEFAULT_DATE_TICK_UNIT
-//        = new SecondTickUnit(SecondTickUnit.DAY, 1, new SimpleDateFormat());
+    //  = new SecondTickUnit(SecondTickUnit.DAY, 1, new SimpleDateFormat());
         = new SecondTickUnit(SecondTickUnit.DAY, 1, false);
 
     /** The default anchor date. */
@@ -766,7 +768,8 @@ class SecondAxis
      *
      * @return A value.
      */
-    public boolean isHiddenValue(long millis) {
+    public boolean isHiddenValue(long millis) 
+    {
         return (!this.timeline.containsDomainValue(new Date(millis)));
     }
 
@@ -794,21 +797,21 @@ class SecondAxis
             double minX = area.getX();
             double maxX = area.getMaxX();
             if (isInverted()) {
-                result = maxX + ((value - axisMin) / (axisMax - axisMin))
-                    * (minX - maxX);
+                result = maxX + ((value - axisMin) / (axisMax - axisMin)) *
+                    (minX - maxX);
             } else {
-                result = minX + ((value - axisMin) / (axisMax - axisMin))
-                    * (maxX - minX);
+                result = minX + ((value - axisMin) / (axisMax - axisMin)) *
+                    (maxX - minX);
             }
         } else if (RectangleEdge.isLeftOrRight(edge)) {
             double minY = area.getMinY();
             double maxY = area.getMaxY();
             if (isInverted()) {
-                result = minY + (((value - axisMin) / (axisMax - axisMin))
-                                 * (maxY - minY));
+                result = minY + (((value - axisMin) / (axisMax - axisMin)) *
+                                 (maxY - minY));
             } else {
-                result = maxY - (((value - axisMin) / (axisMax - axisMin))
-                                 * (maxY - minY));
+                result = maxY - (((value - axisMin) / (axisMax - axisMin)) *
+                                 (maxY - minY));
             }
         }
         return result;
@@ -864,11 +867,11 @@ class SecondAxis
 
         double result;
         if (isInverted()) {
-            result = axisMax - ((java2DValue - min) / (max - min)
-                                * (axisMax - axisMin));
+            result = axisMax - ((java2DValue - min) / (max - min) *
+                                (axisMax - axisMin));
         } else {
-            result = axisMin + ((java2DValue - min) / (max - min)
-                                * (axisMax - axisMin));
+            result = axisMin + ((java2DValue - min) / (max - min) *
+                                (axisMax - axisMin));
         }
 
         return this.timeline.toMillisecond((long) result);
@@ -1018,14 +1021,14 @@ class SecondAxis
             calendar.set(years, value, 1, 0, 0, 0);
             Month month = new Month(calendar.getTime());
             Date standardDate = calculateDateForPosition(
-                                                         month, this.tickMarkPosition
-                                                         );
+                month, this.tickMarkPosition
+            );
             long millis = standardDate.getTime();
             if (millis > date.getTime()) {
                 month = (Month) month.previous();
                 standardDate = calculateDateForPosition(
-                                                        month, this.tickMarkPosition
-                                                        );
+                    month, this.tickMarkPosition
+                );
             }
             return standardDate;
 
@@ -1044,7 +1047,8 @@ class SecondAxis
             calendar.set(value, months, days, 0, 0, 0);
             return calendar.getTime();
 
-        default: return null;
+        default: 
+            return null;
 
         }
 
@@ -1252,7 +1256,7 @@ class SecondAxis
         Plot plot = getPlot();
 
         if (plot == null) {
-            return;  // no plot, no data
+            return; 
         }
 
         if (plot instanceof ValueAxisPlot) {
@@ -1262,8 +1266,9 @@ class SecondAxis
             if (r == null) {
                 if (this.timeline instanceof SegmentedTimeline) {
                     //Timeline hasn't method getStartTime()
-                    r = new DateRange(((SegmentedTimeline) this.timeline).getStartTime(),
-                                      ((SegmentedTimeline) this.timeline).getStartTime() + 1);
+                    r = new DateRange(((SegmentedTimeline) this.timeline).
+                        getStartTime(), ((SegmentedTimeline) this.timeline).
+                        getStartTime() + 1);
                 } else {
                     r = new DateRange();
                 }
@@ -1399,7 +1404,8 @@ class SecondAxis
         if (labelHeight2 < unit2Height) {
             finalUnit = candidate2;
         } else {
-            finalUnit = (SecondTickUnit) tickUnits.getLargerTickUnit(candidate2);
+            finalUnit = (SecondTickUnit) tickUnits.
+                getLargerTickUnit(candidate2);
         }
         setTickUnit(finalUnit, false, false);
 
@@ -1622,7 +1628,8 @@ class SecondAxis
                                                     this.tickMarkPosition);
                 break;
 
-            default: break;
+            default: 
+                break;
 
             }
 
@@ -1754,10 +1761,11 @@ class SecondAxis
     {
         double start =
             this.timeline.toTimelineValue((long) getRange().getLowerBound()
-                                                     );
+            );
+
         double length =
-            (this.timeline.toTimelineValue((long) getRange().getUpperBound())
-             - this.timeline.toTimelineValue((long) getRange().getLowerBound()));
+            (this.timeline.toTimelineValue((long) getRange().getUpperBound()) -
+             this.timeline.toTimelineValue((long) getRange().getLowerBound()));
         long fromVal, toVal;
         if (isInverted()) {
             fromVal = (long) (start + (length * (1 - upperPercent)));
