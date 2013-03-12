@@ -8,6 +8,7 @@ import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
 
@@ -376,6 +377,31 @@ public class ChartGenerator
 
         title = getSectionTitle(compList);
 
+        HashMap<String, List> collisions = new HashMap<String, List>();
+        for (ComponentData cd : compList) {
+            for (ComponentInstance ci : cd.list()) {
+                for (InstanceBean bean : ci.list()) {
+                    if (!bean.hasGraphs()) {
+                        continue;
+                    }
+
+                    Iterator iter;
+                    if (showAll || bean.isIncludeAll()) {
+                        iter = bean.list().iterator();
+                    } else {
+                        iter = bean.listGraph().iterator();
+                    }
+                    while (iter.hasNext()) {
+                        final String name = (String) iter.next();
+                        if (!collisions.containsKey(name)) {
+                            collisions.put(name, new ArrayList());
+                        }
+                        collisions.get(name).add(bean);
+                    }
+                }
+            }
+        }
+
         for (ComponentData cd : compList) {
             for (ComponentInstance ci : cd.list()) {
                 for (InstanceBean bean : ci.list()) {
@@ -420,9 +446,14 @@ public class ChartGenerator
                             deltaStr = "Delta ";
                         }
 
+                        final boolean collides =
+                            collisions.get(name).size() > 1;
                         if (multiSection) {
                             chartName =
                                 deltaStr + bean.getSectionName() + " " + name;
+                        } else if (collides) {
+                            chartName =
+                                deltaStr + bean.getName() + " " + name;
                         } else {
                             chartName = deltaStr + name;
                         }
