@@ -246,7 +246,7 @@ class JavaRunner(object):
         self.send_signal(sig, frame)
         self.__exitsig = sig
 
-    def run(self, sys_args=None, java_args=None, debug=False):
+    def run(self, java_args=None, sys_args=None, debug=False):
         """Run the Java program, handling ^C or ^\ as appropriate"""
         # set CLASSPATH if it hasn't been set yet
         if self.__classpath is None:
