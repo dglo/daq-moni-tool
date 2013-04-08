@@ -260,7 +260,7 @@ class DoubleStat
 {
     private static final Pattern STAT_PAT =
         Pattern.compile(
-            "^(\\s+([^\\s:]+):?|\\s*(.+)\\s*:)\\s+(\\d+\\.?\\d*)\\s*$");
+            "^(\\s+([^\\s:]+):?|\\s*(.+)\\s*:)\\s+([\\-\\+]?\\d+\\.?\\d*)\\s*$");
 
     public void checkDataType(BaseData data)
     {
