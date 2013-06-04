@@ -4,10 +4,10 @@ Charting the DAQ monitoring values
 
 Building the tool
 -----------------
-'daq-moni-tool' is not built as part of the normal pDAQ build so you first
-need to build the code.  In the 'daq-moni-tool' directory, run:
+`daq-moni-tool` is not built as part of the normal pDAQ build so you first
+need to build the code.  In the `daq-moni-tool` directory, run:
 
-    mvn -Dmaven.test.skip=true clean install assembly:assembly
+    mvn clean install
 
 This builds the project and installs it in your local Maven repository
 
@@ -20,22 +20,22 @@ then find the "download complete tarball" link (just above the "pDAQ Details"
 section) and save the tarball file to your local machine.
 
 The pDAQ monitoring data is buried a couple of layers inside the downloaded
-tarball.  The 'unpack-download' script in the top-level daq-moni-tool
+tarball.  The `unpack-download` script in the top-level daq-moni-tool
 directory will unpack the file and remove the extra stuff:
 
     ./unpack-download ~/Downloads/SPS-pDAQ-run-121212.tar.gz
 
-This will leave you with a 'daqrun121212' subdirectory.
+This will leave you with a `daqrun121212` subdirectory.
 
 
-Running 'chart'
+Running `chart`
 ---------------
 
-FINALLY you're ready to chart some data!  The 'chart' utility script will read
+FINALLY you're ready to chart some data!  The `chart` utility script will read
 in all the specified files/directories and pop up a window you can use to
 choose which quantities to display.
 
-'chart' is currently pretty stupid, so if you run:
+`chart` is currently pretty stupid, so if you run:
 
     ./chart daqrun121212
 
@@ -66,13 +66,13 @@ The output looks something like this:
         list1: [12, 34, 56]
         dict1: {"abc": 54, "def": 32}
 
-NOTE: the 'chart' program doesn't know how to display that last format.  It'll
+NOTE: the `chart` program doesn't know how to display that last format.  It'll
       present you with a "dict1" option but the resulting chart will be empty.
 
-The 'chart' program will organize this data into several levels, but it will
+The `chart` program will organize this data into several levels, but it will
 also group together similarly named files.
 
-A single file like 'inIceTrigger-0.moni' will be organized into an
+A single file like `inIceTrigger-0.moni` will be organized into an
 "inIceTrigger" layer, a set of subsystem layers (like "jvm", "manager",
 "stringHit", "system" and "trigger") and then individual data quantity choices.
 
@@ -86,13 +86,15 @@ The main window allows you to choose which data you'd like to display and
 how it should be displayed.
 
 The top row of choices are:
+
 * Show points - mark the points on each when the data sample was taken
 * Hide legends - plots with multiple lines display a legend describing each line.
                  Choosing this option hides that legend.
 * Filter uninteresting - omit charts for unchanging data
 You can select of disable as many of these choices as you'd like.
 
-The second row allows you to select how the ata is displayed:
+The second row allows you to select how the data is displayed:
+
 * Graph all - present charts for every piece of data.  This is almost always
               the wrong choice since the number of charts is overwhelming.
 * Graph selected - only present charts of data which is selected.
@@ -110,7 +112,7 @@ The final pane shows all the quantities, as well as a "Graph all XXX statistics"
 choice.  You can choose individual statistics or just hit the "Graph all"
 choice.
 
-When you've chosen everything you wish to chart, hit the "Dar graphs" button
+When you've chosen everything you wish to chart, hit the "Bar graphs" button
 at the bottom of the window.
 
 All choices are retained when flipping between components and/or subsystems.
