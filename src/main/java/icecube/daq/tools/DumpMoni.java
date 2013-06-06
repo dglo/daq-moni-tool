@@ -21,7 +21,7 @@ public class DumpMoni
             File f = (File) fileIter.next();
 
             try {
-                statData.addData(new GraphSource(f));
+                statData.addData(new GraphSource(f), false);
             } catch (IOException ioe) {
                 System.err.println("Couldn't load \"" + f + "\":");
                 ioe.printStackTrace();
