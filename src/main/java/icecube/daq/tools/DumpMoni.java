@@ -4,11 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 public class DumpMoni
 {
-    private ArrayList fileList = new ArrayList();
+    private ArrayList<File> fileList = new ArrayList<File>();
 
     DumpMoni(String[] args)
     {
@@ -16,10 +15,7 @@ public class DumpMoni
 
         StatData statData = new StatData();
 
-        Iterator fileIter = fileList.iterator();
-        while (fileIter.hasNext()) {
-            File f = (File) fileIter.next();
-
+        for (File f : fileList) {
             try {
                 statData.addData(new GraphSource(f), false);
             } catch (IOException ioe) {
@@ -47,16 +43,10 @@ public class DumpMoni
 
     private void dump(StatData data, PrintStream out)
     {
-        Iterator sIter = data.getSections().iterator();
-        while (sIter.hasNext()) {
-            String section = (String) sIter.next();
-
-            Iterator nIter = data.getSectionNames(section).iterator();
-            while (nIter.hasNext()) {
-                String name = (String) nIter.next();
-
-                StatParent stats = data.getStatistics(section, name);
-                out.println(section + " " + name + " " + stats);
+        for (SectionKey key : data.getSections()) {
+            for (String name : data.getSectionNames(key)) {
+                StatParent stats = data.getStatistics(key, name);
+                out.println(key + " " + name + " " + stats);
             }
         }
     }
