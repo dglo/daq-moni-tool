@@ -181,12 +181,12 @@ class LongStat
                                      ChartTime time, String line)
         throws StatParseException
     {
-        return save(statData, null, sectionName, time, line);
+        return save(statData, null, sectionName, time, line, false);
     }
 
     public static final boolean save(StatData statData, String sectionHost,
                                      String sectionName, ChartTime time,
-                                     String line)
+                                     String line, boolean ignore)
         throws StatParseException
     {
         Matcher matcher = STAT_PAT.matcher(line);
@@ -216,8 +216,11 @@ class LongStat
                                          " before time was set");
         }
 
-        statData.add(sectionHost, sectionName, name,
-                     new LongData(time, val));
+        if (!ignore) {
+            statData.add(sectionHost, sectionName, name,
+                         new LongData(time, val));
+        }
+
         return true;
     }
 }
@@ -385,12 +388,12 @@ class DoubleStat
                                      ChartTime time, String line)
         throws StatParseException
     {
-        return save(statData, null, sectionName, time, line);
+        return save(statData, null, sectionName, time, line, false);
     }
 
     public static final boolean save(StatData statData, String sectionHost,
                                      String sectionName, ChartTime time,
-                                     String line)
+                                     String line, boolean ignore)
         throws StatParseException
     {
         Matcher matcher = STAT_PAT.matcher(line);
@@ -420,8 +423,11 @@ class DoubleStat
                                          " before time was set");
         }
 
-        statData.add(sectionHost, sectionName, name,
-                     new DoubleData(time, val));
+        if (!ignore) {
+            statData.add(sectionHost, sectionName, name,
+                         new DoubleData(time, val));
+        }
+
         return true;
     }
 }
@@ -653,12 +659,12 @@ class MemoryStat
                                      ChartTime time, String line)
         throws StatParseException
     {
-        return save(statData, null, sectionName, time, line);
+        return save(statData, null, sectionName, time, line, false);
     }
 
     public static final boolean save(StatData statData, String sectionHost,
                                      String sectionName, ChartTime time,
-                                     String line)
+                                     String line, boolean ignore)
         throws StatParseException
     {
         Matcher matcher = STAT_PAT.matcher(line);
@@ -710,8 +716,11 @@ class MemoryStat
                                          " stat before time was set");
         }
 
-        statData.add(sectionHost, sectionName, name,
-                     new MemoryData(time, memVals));
+        if (!ignore) {
+            statData.add(sectionHost, sectionName, name,
+                         new MemoryData(time, memVals));
+        }
+
         return true;
     }
 
@@ -800,12 +809,12 @@ class StringStat
                                      ChartTime time, String line)
         throws StatParseException
     {
-        return save(statData, null, sectionName, time, line);
+        return save(statData, null, sectionName, time, line, false);
     }
 
     public static final boolean save(StatData statData, String sectionHost,
                                      String sectionName, ChartTime time,
-                                     String line)
+                                     String line, boolean ignore)
         throws StatParseException
     {
         Matcher matcher = STAT_PAT.matcher(line);
@@ -821,8 +830,11 @@ class StringStat
                                          " before time was set");
         }
 
-        statData.add(sectionHost, sectionName, name,
-                     new StringData(time, val));
+        if (!ignore) {
+            statData.add(sectionHost, sectionName, name,
+                         new StringData(time, val));
+        }
+
         return true;
     }
 }
@@ -1016,7 +1028,7 @@ class StrandStat
 
     public static final boolean save(StatData statData, String sectionHost,
                                      String sectionName, ChartTime time,
-                                     String line)
+                                     String line, boolean ignore)
         throws StatParseException
     {
         String[] flds = line.split("\\s+");
@@ -1042,13 +1054,15 @@ class StrandStat
                                          " stat before time was set");
         }
 
-        try {
-            statData.add(sectionHost, sectionName, name,
-                         new StrandData(time, vals));
-        } catch (Error err) {
-            System.err.println("Bad strands for " + sectionHost + "/" +
-                               sectionName + "/" + name + " " + time + ": " +
-                               err.getMessage());
+        if (!ignore) {
+            try {
+                statData.add(sectionHost, sectionName, name,
+                             new StrandData(time, vals));
+            } catch (Error err) {
+                System.err.println("Bad strands for " + sectionHost + "/" +
+                                   sectionName + "/" + name + " " + time + ": " +
+                                   err.getMessage());
+            }
         }
 
         return true;
@@ -1282,7 +1296,7 @@ class TriggerStat
 
     public static final boolean save(StatData statData, String sectionHost,
                                      String sectionName, ChartTime time,
-                                     String line)
+                                     String line, boolean ignore)
         throws StatParseException
     {
         Matcher matcher = STAT_PAT.matcher(line);
@@ -1316,8 +1330,11 @@ class TriggerStat
                                          "/" + dVal + " before time was set");
         }
 
-        statData.add(sectionHost, sectionName, name,
-                     new TriggerData(time, val, dVal));
+        if (!ignore) {
+            statData.add(sectionHost, sectionName, name,
+                         new TriggerData(time, val, dVal));
+        }
+
         return true;
     }
 }
@@ -1596,12 +1613,12 @@ class TimingStat
                                      ChartTime time, String line)
         throws StatParseException
     {
-        return save(statData, null, sectionName, time, line);
+        return save(statData, null, sectionName, time, line, false);
     }
 
     public static final boolean save(StatData statData, String sectionHost,
                                      String sectionName, ChartTime time,
-                                     String line)
+                                     String line, boolean ignore)
         throws StatParseException
     {
         Matcher matcher = STAT_PAT.matcher(line);
@@ -1650,8 +1667,11 @@ class TimingStat
             return false;
         }
 
-        statData.add(sectionHost, sectionName, name,
-                     new TimingData(time, timing));
+        if (!ignore) {
+            statData.add(sectionHost, sectionName, name,
+                         new TimingData(time, timing));
+        }
+
         return true;
     }
 
@@ -2009,7 +2029,7 @@ class ListStat
 
     public static final boolean save(StatData statData, String sectionHost,
                                      String sectionName, ChartTime time,
-                                     String line)
+                                     String line, boolean ignore)
         throws StatParseException
     {
         Matcher matcher = STAT_PAT.matcher(line);
@@ -2066,7 +2086,10 @@ class ListStat
             }
         }
 
-        statData.add(sectionHost, sectionName, name, data);
+        if (!ignore) {
+            statData.add(sectionHost, sectionName, name, data);
+        }
+
         return true;
     }
 
@@ -2205,9 +2228,11 @@ final class EBLogParser
     private static final Pattern RAWNAME_PAT =
         Pattern.compile("^(\\S+)\\s+(\\S\\S[^\\s:]+):\\s*$");
 
-    private boolean grabStrandDepths;
     private String sectionHost;
     private String sectionName;
+
+    private boolean grabStrandDepths;
+    private boolean ignoreSection;
 
     private EBLogParser(String host, String name)
     {
@@ -2223,7 +2248,7 @@ final class EBLogParser
         if (grabStrandDepths) {
             grabStrandDepths = false;
             if (StrandStat.save(statData, sectionHost, sectionName, time,
-                                line))
+                                line, ignoreSection))
             {
                 return true;
             }
@@ -2251,7 +2276,7 @@ final class EBLogParser
             return true;
         } else if (line.startsWith("Trigger count:")) {
             if (TriggerStat.save(statData, sectionHost, sectionName, time,
-                                 line))
+                                 line, ignoreSection))
             {
                 return true;
             }
@@ -2260,19 +2285,27 @@ final class EBLogParser
             return false;
         }
 
-        if (LongStat.save(statData, sectionHost, sectionName, time, line)) {
+        if (LongStat.save(statData, sectionHost, sectionName, time, line,
+                            ignoreSection))
+        {
             return true;
         }
 
-        if (MemoryStat.save(statData, sectionHost, sectionName, time, line)) {
+        if (MemoryStat.save(statData, sectionHost, sectionName, time, line,
+                            ignoreSection))
+        {
             return true;
         }
 
-        if (DoubleStat.save(statData, sectionHost, sectionName, time, line)) {
+        if (DoubleStat.save(statData, sectionHost, sectionName, time, line,
+                            ignoreSection))
+        {
             return true;
         }
 
-        if (TimingStat.save(statData, sectionHost, sectionName, time, line)) {
+        if (TimingStat.save(statData, sectionHost, sectionName, time, line,
+                            ignoreSection))
+        {
             return true;
         }
 
@@ -2365,14 +2398,20 @@ final class PDAQParser
         dateFmt.setTimeZone(TimeZone.getTimeZone("UTC"));
     };
 
-    private boolean grabStrandDepths;
     private String sectionHost;
     private String sectionName;
+    private boolean omitDataCollector;
 
-    private PDAQParser(String sectionHost, String sectionName)
+    private boolean grabStrandDepths;
+    private boolean ignoreSection;
+
+    private PDAQParser(String sectionHost, String sectionName,
+                       boolean omitDataCollector)
     {
+if(!omitDataCollector)try{throw new Error("StackTrace");}catch(Error e){ e.printStackTrace();}
         this.sectionHost = sectionHost;
         this.sectionName = sectionName;
+        this.omitDataCollector = omitDataCollector;
     }
 
     public boolean match(StatData statData, String line)
@@ -2383,7 +2422,7 @@ final class PDAQParser
         if (grabStrandDepths) {
             grabStrandDepths = false;
             if (StrandStat.save(statData, sectionHost, sectionName, time,
-                                line))
+                                line, ignoreSection))
             {
                 return true;
             }
@@ -2406,7 +2445,7 @@ final class PDAQParser
             return true;
         } else if (line.startsWith("Triggercount:")) {
             if (TriggerStat.save(statData, sectionHost, sectionName, time,
-                                 line))
+                                 line, ignoreSection))
             {
                 return true;
             }
@@ -2415,44 +2454,57 @@ final class PDAQParser
             return false;
         }
 
-        if (LongStat.save(statData, sectionHost, sectionName, time, line)) {
+        if (LongStat.save(statData, sectionHost, sectionName, time, line,
+                          ignoreSection))
+        {
             return true;
         }
 
-        if (ListStat.save(statData, sectionHost, sectionName, time, line)) {
+        if (ListStat.save(statData, sectionHost, sectionName, time, line,
+                          ignoreSection))
+        {
             return true;
         }
 
-        if (MemoryStat.save(statData, sectionHost, sectionName, time, line)) {
+        if (MemoryStat.save(statData, sectionHost, sectionName, time, line,
+                            ignoreSection))
+        {
             return true;
         }
 
-        if (DoubleStat.save(statData, sectionHost, sectionName, time, line)) {
+        if (DoubleStat.save(statData, sectionHost, sectionName, time, line,
+                          ignoreSection))
+        {
             return true;
         }
 
-        if (TimingStat.save(statData, sectionHost, sectionName, time, line)) {
+        if (TimingStat.save(statData, sectionHost, sectionName, time, line,
+                          ignoreSection))
+        {
             return true;
         }
 
-        if (StringStat.save(statData, sectionHost, sectionName, time, line)) {
+        if (StringStat.save(statData, sectionHost, sectionName, time, line,
+                          ignoreSection))
+        {
             return true;
         }
 
-        if (matchStart(this, null, line) != null) {
+        if (matchStart(this, null, line, omitDataCollector) != null) {
             return true;
         }
 
         throw new StatParseException("Unknown line \"" + line + "\"");
     }
 
-    static PDAQParser matchStart(GraphSource inputSrc, String line)
+    static PDAQParser matchStart(GraphSource inputSrc, String line,
+                                 boolean omitDataCollector)
     {
-        return matchStart(null, inputSrc, line);
+        return matchStart(null, inputSrc, line, omitDataCollector);
     }
 
     static PDAQParser matchStart(PDAQParser parser, GraphSource inputSrc,
-                                 String line)
+                                 String line, boolean omitDataCollector)
     {
         Matcher matcher = BEANDATE_PAT.matcher(line);
         if (!matcher.find()) {
@@ -2476,11 +2528,15 @@ final class PDAQParser
         String sectionName = matcher.group(1);
 
         if (parser == null) {
-            parser = new PDAQParser(sectionHost, sectionName);
+            parser =
+                new PDAQParser(sectionHost, sectionName, omitDataCollector);
         } else {
             parser.sectionHost = sectionHost;
             parser.sectionName = sectionName;
         }
+
+        parser.ignoreSection = omitDataCollector &&
+            sectionName.startsWith("DataCollectorMonitor");
 
         if (matcher.groupCount() > 1) {
             Date myDate;
@@ -2508,7 +2564,7 @@ public class StatData
     {
     }
 
-    public void addData(GraphSource inputSrc)
+    public void addData(GraphSource inputSrc, boolean omitDataCollector)
         throws IOException
     {
         if (inputSrc == null) {
@@ -2533,7 +2589,8 @@ public class StatData
             }
 
             if (parser == null) {
-                parser = PDAQParser.matchStart(inputSrc, line);
+                parser =
+                    PDAQParser.matchStart(inputSrc, line, omitDataCollector);
                 if (parser == null) {
                     parser = EBLogParser.matchStart(line);
                     if (parser == null) {

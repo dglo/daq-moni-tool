@@ -424,22 +424,61 @@ public class DAQMoniChart
 
     public DAQMoniChart(String[] args)
     {
+        boolean omitDataCollector = false;
+        boolean usage = false;
         for (int i = 0; i < args.length; i++) {
-            File f = new File(args[i]);
-            if (!f.exists()) {
-                System.err.println("No such file \"" + f + "\"");
+            if (args[i].length() == 0) {
+                System.err.println("Ignoring empty argument");
                 continue;
             }
 
-            if (statData == null) {
-                statData = new StatData();
+            if (args[i].charAt(0) != '-') {
+                // add statistics from file
+                File f = new File(args[i]);
+                if (!f.exists()) {
+                    System.err.println("No such file \"" + f + "\"");
+                    continue;
+                }
+
+                if (statData == null) {
+                    statData = new StatData();
+                }
+
+                addSource(statData, f, omitDataCollector);
+                continue;
             }
 
-            addSource(statData, f);
+            boolean badArg = false;
+            if (args[i].length() == 1) {
+                badArg = true;
+            } else {
+                switch (args[i].charAt(1)) {
+                case 'o':
+                    omitDataCollector = true;
+                    break;
+                default:
+                    badArg = true;
+                    break;
+                }
+            }
+
+            if (badArg) {
+                System.err.format("Bad argument '%s'\n", args[i]);
+                usage = true;
+            }
         }
 
         if (statData == null) {
-            throw new Error("No data files found!");
+            System.err.println("No data files found!");
+            usage = true;
+        }
+
+        if (usage) {
+            final String msg =
+                String.format("Usage: %s [-o(mitDataCollector)]" +
+                              " file.moni [file.moni ...]",
+                              getClass().getName());
+            throw new Error(msg);
         }
 
         setTitle("Monitoring Charts");
@@ -495,18 +534,19 @@ public class DAQMoniChart
         }
     }
 
-    private static final void addSource(StatData statData, File f)
+    private static final void addSource(StatData statData, File f,
+                                        boolean omitDataCollector)
     {
         if (f.isDirectory()) {
             File[] list = f.listFiles();
             for (int i = 0; i < list.length; i++) {
-                addSource(statData, list[i]);
+                addSource(statData, list[i], omitDataCollector);
             }
         } else {
             System.out.println(f + ":");
 
             try {
-                statData.addData(new GraphSource(f));
+                statData.addData(new GraphSource(f), omitDataCollector);
             } catch (IOException ioe) {
                 System.err.println("Couldn't load \"" + f + "\":");
                 ioe.printStackTrace();
