@@ -315,8 +315,6 @@ public class ChartGenerator
                         continue;
                     }
 
-                    final String sectionName = bean.getSectionKey().toString();
-
                     int numCharted = 0;
                     String chartName = null;
 
@@ -328,19 +326,19 @@ public class ChartGenerator
                             chartName = name;
                         }
 
-                        if (!scale) {
-                            stat.plot(coll, sectionName, name, true);
+                        if (scale) {
+                            stat.plotScaled(coll, bean.getSectionKey(), name);
                         } else {
-                            stat.plotScaled(coll, sectionName, name);
+                            stat.plot(coll, bean.getSectionKey(), name, true);
                         }
                         numCharted++;
                     }
 
                     if (title == null) {
-                        if (numCharted == 1) {
+                        if (!multiSection) {
                             title = chartName;
                         } else {
-                            title = sectionName;
+                            title = bean.getSectionKey().toString();
                         }
                     }
                 }
@@ -403,8 +401,6 @@ public class ChartGenerator
                         continue;
                     }
 
-                    final String sectionName = bean.getSectionKey().toString();
-
                     int numCharted = 0;
                     String chartName = null;
 
@@ -421,9 +417,9 @@ public class ChartGenerator
                         TimeSeriesCollection coll;
                         if (!delta) {
                             coll =
-                                stat.plot(sectionName, name, false);
+                                stat.plot(bean.getSectionKey(), name, false);
                         } else {
-                            coll = stat.plotDelta(sectionName, name);
+                            coll = stat.plotDelta(bean.getSectionKey(), name);
                         }
 
                         boolean showLegend =
@@ -443,8 +439,8 @@ public class ChartGenerator
                         final boolean collides =
                             collisions.get(name).size() > 1;
                         if (multiSection) {
-                            chartName =
-                                deltaStr + sectionName + " " + name;
+                            chartName = deltaStr +
+                                bean.getSectionKey().toString() + " " + name;
                         } else if (collides) {
                             chartName =
                                 deltaStr + bean.getName() + " " + name;
@@ -461,7 +457,7 @@ public class ChartGenerator
                         if (numCharted == 1) {
                             title = chartName;
                         } else {
-                            title = sectionName;
+                            title = bean.getSectionKey().toString();
                         }
                     }
                 }
