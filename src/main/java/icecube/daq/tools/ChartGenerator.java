@@ -7,7 +7,6 @@ import java.awt.GridLayout;
 import java.awt.Shape;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.TimeZone;
@@ -34,7 +33,7 @@ import org.jfree.data.xy.XYDataset;
 public class ChartGenerator
 {
     private String title;
-    private ArrayList chartList = new ArrayList();
+    private ArrayList<JFreeChart> chartList = new ArrayList<JFreeChart>();
 
     ChartGenerator(List<ComponentData> compList, StatData statData,
                    ChartChoices choices)
@@ -143,7 +142,7 @@ public class ChartGenerator
                     break;
                 }
 
-                JFreeChart chart = (JFreeChart) chartList.get(idx);
+                JFreeChart chart = chartList.get(idx);
                 BufferedImage img =
                     chart.createBufferedImage(colWidth, rowHeight);
                 g2d.drawImage(img, c * colWidth, r * rowHeight, null);
@@ -158,10 +157,10 @@ public class ChartGenerator
         String secTitle = null;
 
         for (ComponentData cd : compList) {
-            for (ComponentInstance ci : cd.list()) {
+            for (ComponentInstance ci : cd.iterator()) {
 
                 boolean foundInst = false;
-                for (InstanceBean bean : ci.list()) {
+                for (InstanceBean bean : ci.iterator()) {
                     if (bean.hasGraphs()) {
                         foundInst = true;
                         break;
@@ -207,8 +206,8 @@ public class ChartGenerator
             boolean foundOne = false;
 
             for (ComponentData cd : compList) {
-                for (ComponentInstance ci : cd.list()) {
-                    for (InstanceBean bean : ci.list()) {
+                for (ComponentInstance ci : cd.iterator()) {
+                    for (InstanceBean bean : ci.iterator()) {
                         if (bean.hasGraphs()) {
                             if (foundOne) {
                                 // if we've found two sections with graphs,
@@ -237,16 +236,14 @@ public class ChartGenerator
             return false;
         }
 
-        Iterator iter = coll.getSeries().iterator();
-        while (iter.hasNext()) {
-            TimeSeries series = (TimeSeries) iter.next();
+        for (Object obj : coll.getSeries()) {
+            TimeSeries series = (TimeSeries) obj;
 
             double prevVal = Double.NaN;
 
-            Iterator sIt = series.getItems().iterator();
-            while (sIt.hasNext()) {
+            for (Object o2 : series.getItems()) {
                 TimeSeriesDataItem item =
-                    (TimeSeriesDataItem) sIt.next();
+                    (TimeSeriesDataItem) o2;
 
                 double curVal = item.getValue().doubleValue();
 
@@ -281,9 +278,8 @@ public class ChartGenerator
 
         JPanel panel = new JPanel(new GridLayout(numRows, numCols));
 
-        Iterator iter = chartList.iterator();
-        while (iter.hasNext()) {
-            panel.add(new ChartPanel((JFreeChart) iter.next()));
+        for (JFreeChart chart : chartList) {
+            panel.add(new ChartPanel(chart));
         }
 
         panel.setPreferredSize(new Dimension(800, 600));
@@ -313,30 +309,29 @@ public class ChartGenerator
         coll.setDomainIsPointsInTime(true);
 
         for (ComponentData cd : compList) {
-            for (ComponentInstance ci : cd.list()) {
-                for (InstanceBean bean : ci.list()) {
+            for (ComponentInstance ci : cd.iterator()) {
+                for (InstanceBean bean : ci.iterator()) {
                     if (!bean.hasGraphs()) {
                         continue;
                     }
 
+                    final String sectionName = bean.getSectionKey().toString();
+
                     int numCharted = 0;
                     String chartName = null;
 
-                    Iterator iter = bean.listGraph().iterator();
-                    while (iter.hasNext()) {
-                        String name = (String) iter.next();
-
+                    for (String name : bean.graphIterator()) {
                         StatParent stat =
-                            statData.getStatistics(bean.getSectionName(), name);
+                            statData.getStatistics(bean.getSectionKey(), name);
 
                         if (!multiSection) {
                             chartName = name;
                         }
 
                         if (!scale) {
-                            stat.plot(coll, bean.getSectionName(), name, true);
+                            stat.plot(coll, sectionName, name, true);
                         } else {
-                            stat.plotScaled(coll, bean.getSectionName(), name);
+                            stat.plotScaled(coll, sectionName, name);
                         }
                         numCharted++;
                     }
@@ -345,7 +340,7 @@ public class ChartGenerator
                         if (numCharted == 1) {
                             title = chartName;
                         } else {
-                            title = bean.getSectionName();
+                            title = sectionName;
                         }
                     }
                 }
@@ -379,20 +374,19 @@ public class ChartGenerator
 
         HashMap<String, List> collisions = new HashMap<String, List>();
         for (ComponentData cd : compList) {
-            for (ComponentInstance ci : cd.list()) {
-                for (InstanceBean bean : ci.list()) {
+            for (ComponentInstance ci : cd.iterator()) {
+                for (InstanceBean bean : ci.iterator()) {
                     if (!bean.hasGraphs()) {
                         continue;
                     }
 
-                    Iterator iter;
+                    Iterable<String> iter;
                     if (showAll || bean.isIncludeAll()) {
-                        iter = bean.list().iterator();
+                        iter = bean.iterator();
                     } else {
-                        iter = bean.listGraph().iterator();
+                        iter = bean.graphIterator();
                     }
-                    while (iter.hasNext()) {
-                        final String name = (String) iter.next();
+                    for (String name : iter) {
                         if (!collisions.containsKey(name)) {
                             collisions.put(name, new ArrayList());
                         }
@@ -403,33 +397,33 @@ public class ChartGenerator
         }
 
         for (ComponentData cd : compList) {
-            for (ComponentInstance ci : cd.list()) {
-                for (InstanceBean bean : ci.list()) {
+            for (ComponentInstance ci : cd.iterator()) {
+                for (InstanceBean bean : ci.iterator()) {
                     if (!bean.hasGraphs()) {
                         continue;
                     }
 
+                    final String sectionName = bean.getSectionKey().toString();
+
                     int numCharted = 0;
                     String chartName = null;
 
-                    Iterator iter;
+                    Iterable<String> iter;
                     if (showAll || bean.isIncludeAll()) {
-                        iter = bean.list().iterator();
+                        iter = bean.iterator();
                     } else {
-                        iter = bean.listGraph().iterator();
+                        iter = bean.graphIterator();
                     }
-                    while (iter.hasNext()) {
-                        String name = (String) iter.next();
-
+                    for (String name : iter) {
                         StatParent stat =
-                            statData.getStatistics(bean.getSectionName(), name);
+                            statData.getStatistics(bean.getSectionKey(), name);
 
                         TimeSeriesCollection coll;
                         if (!delta) {
                             coll =
-                                stat.plot(bean.getSectionName(), name, false);
+                                stat.plot(sectionName, name, false);
                         } else {
-                            coll = stat.plotDelta(bean.getSectionName(), name);
+                            coll = stat.plotDelta(sectionName, name);
                         }
 
                         boolean showLegend =
@@ -450,7 +444,7 @@ public class ChartGenerator
                             collisions.get(name).size() > 1;
                         if (multiSection) {
                             chartName =
-                                deltaStr + bean.getSectionName() + " " + name;
+                                deltaStr + sectionName + " " + name;
                         } else if (collides) {
                             chartName =
                                 deltaStr + bean.getName() + " " + name;
@@ -467,7 +461,7 @@ public class ChartGenerator
                         if (numCharted == 1) {
                             title = chartName;
                         } else {
-                            title = bean.getSectionName();
+                            title = sectionName;
                         }
                     }
                 }

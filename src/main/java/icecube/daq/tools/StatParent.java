@@ -1,18 +1,17 @@
 package icecube.daq.tools;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import org.jfree.data.time.TimeSeriesCollection;
 
 public abstract class StatParent
 {
-    private ArrayList dataList;
+    private ArrayList<BaseData> dataList;
 
     void add(BaseData data)
     {
         if (dataList == null) {
-            dataList = new ArrayList();
+            dataList = new ArrayList<BaseData>();
         }
 
         checkDataType(data);
@@ -27,9 +26,9 @@ public abstract class StatParent
         return dataList.size() < 2;
     }
 
-    public Iterator iterator()
+    public Iterable<BaseData> iterator()
     {
-        return dataList.iterator();
+        return dataList;
     }
 
     public TimeSeriesCollection plot(String section, String name,

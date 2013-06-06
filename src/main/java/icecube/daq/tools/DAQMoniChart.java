@@ -13,8 +13,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.ButtonGroup;
 import javax.swing.JButton;
@@ -29,17 +29,17 @@ import org.jfree.ui.RefineryUtilities;
 class InstanceBean
 {
     private String name;
-    private List itemNames;
-    private String sectionName;
+    private List<String> itemNames;
+    private SectionKey key;
 
     private boolean includeAll;
-    private List graphNames;
+    private List<String> graphNames;
 
-    InstanceBean(String name, List itemNames, String sectionName)
+    InstanceBean(String name, List<String> itemNames, SectionKey key)
     {
         this.name = name;
         this.itemNames = itemNames;
-        this.sectionName = sectionName;
+        this.key = key;
     }
 
     public void addGraph(String name)
@@ -49,7 +49,7 @@ class InstanceBean
         }
 
         if (graphNames == null) {
-            graphNames = new ArrayList();
+            graphNames = new ArrayList<String>();
         }
 
         graphNames.add(name);
@@ -60,9 +60,18 @@ class InstanceBean
         return name;
     }
 
-    String getSectionName()
+    SectionKey getSectionKey()
     {
-        return sectionName;
+        return key;
+    }
+
+    Iterable<String> graphIterator()
+    {
+        if (includeAll) {
+            return itemNames;
+        }
+
+        return graphNames;
     }
 
     public boolean hasGraphs()
@@ -80,18 +89,9 @@ class InstanceBean
         return includeAll || (graphNames != null && graphNames.contains(name));
     }
 
-    List list()
+    Iterable<String> iterator()
     {
         return itemNames;
-    }
-
-    List listGraph()
-    {
-        if (includeAll) {
-            return itemNames;
-        }
-
-        return graphNames;
     }
 
     boolean matches(String name)
@@ -114,6 +114,11 @@ class InstanceBean
         includeAll = val;
     }
 
+    int size()
+    {
+        return itemNames.size();
+    }
+
     public String toString()
     {
         return name;
@@ -131,9 +136,9 @@ class ComponentInstance
         this.list = new ArrayList<InstanceBean>();
     }
 
-    InstanceBean create(String name, List itemNames, String sectionName)
+    InstanceBean create(String name, List<String> itemNames, SectionKey key)
     {
-        InstanceBean bean = new InstanceBean(name, itemNames, sectionName);
+        InstanceBean bean = new InstanceBean(name, itemNames, key);
         list.add(bean);
         return bean;
     }
@@ -154,7 +159,7 @@ class ComponentInstance
         return num;
     }
 
-    List<InstanceBean> list()
+    Iterable<InstanceBean> iterator()
     {
         return list;
     }
@@ -194,6 +199,15 @@ class ComponentData
         return null;
     }
 
+    ComponentInstance getFirst()
+    {
+        if (list.size() == 0) {
+            return null;
+        }
+
+        return list.get(0);
+    }
+
     String getName()
     {
         return name;
@@ -204,7 +218,7 @@ class ComponentData
         return list.size() == 1;
     }
 
-    List<ComponentInstance> list()
+    Iterable<ComponentInstance> iterator()
     {
         return list;
     }
@@ -219,7 +233,8 @@ class TypeButtons
 {
     private JRadioButton showAllBtn;
     private JRadioButton showSelBtn;
-    private ArrayList sections = new ArrayList();
+    private ArrayList<IncAllCheckBox> sections =
+        new ArrayList<IncAllCheckBox>();
 
     TypeButtons()
     {
@@ -232,9 +247,7 @@ class TypeButtons
 
     void clearAll()
     {
-        Iterator iter = sections.iterator();
-        while (iter.hasNext()) {
-            IncAllCheckBox ckbox = (IncAllCheckBox) iter.next();
+        for (IncAllCheckBox ckbox : sections) {
             ckbox.clearAll();
         }
     }
@@ -299,7 +312,7 @@ abstract class SectionChoicesCheckBox
 class IncAllCheckBox
     extends SectionChoicesCheckBox
 {
-    private ArrayList list = new ArrayList();
+    private ArrayList<JCheckBox> list = new ArrayList<JCheckBox>();
 
     IncAllCheckBox(String name, ChartChoices chartChoices,
                    InstanceBean instBean, TypeButtons typeButtons)
@@ -320,9 +333,7 @@ class IncAllCheckBox
 
     void clearIndividual()
     {
-        Iterator iter = list.iterator();
-        while (iter.hasNext()) {
-            JCheckBox ckbox = (JCheckBox) iter.next();
+        for (JCheckBox ckbox : list) {
             ckbox.setSelected(false);
         }
     }
@@ -381,9 +392,9 @@ class TemplateCheckBox
     extends JCheckBox
     implements ItemListener
 {
-    private List ckboxList;
+    private List<JCheckBox> ckboxList;
 
-    TemplateCheckBox(String name, List ckboxList)
+    TemplateCheckBox(String name, List<JCheckBox> ckboxList)
     {
         super(name);
 
@@ -394,9 +405,7 @@ class TemplateCheckBox
 
     public void itemStateChanged(ItemEvent evt)
     {
-        Iterator iter = ckboxList.iterator();
-        while (iter.hasNext()) {
-            NameCheckBox ckbox = (NameCheckBox) iter.next();
+        for (JCheckBox ckbox : ckboxList) {
             if (evt.getStateChange() == ItemEvent.SELECTED &&
                 !ckbox.isSelected())
             {
@@ -497,11 +506,9 @@ public class DAQMoniChart
 
     private void addBeanPanel(JTabbedPane pane, ComponentInstance compInst)
     {
-        for (InstanceBean instBean : compInst.list()) {
-            List names = instBean.list();
-
+        for (InstanceBean instBean : compInst.iterator()) {
             final int cols = 3;
-            final int rows = (names.size() + cols - 1) / cols;
+            final int rows = (instBean.size() + cols - 1) / cols;
 
             JPanel panel = new JPanel();
             panel.setLayout(new BorderLayout());
@@ -516,10 +523,7 @@ public class DAQMoniChart
             JPanel gridPanel = new JPanel();
             gridPanel.setLayout(new GridLayout(rows, cols));
 
-            Iterator iter = names.iterator();
-            while (iter.hasNext()) {
-                String name = (String) iter.next();
-
+            for (String name : instBean.iterator()) {
                 JCheckBox ckbox =
                     new NameCheckBox(name, chartChoices, instBean, typeButtons,
                                      includeAll);
@@ -742,51 +746,17 @@ public class DAQMoniChart
     {
         ArrayList<ComponentData> list = new ArrayList<ComponentData>();
 
-        HashMap map = new HashMap();
+        HashMap<String, ComponentData> map = new HashMap<String, ComponentData>();
 
-        Iterator sectIter = statData.getSections().iterator();
-        while (sectIter.hasNext()) {
-            String section = (String) sectIter.next();
-
-            List names = statData.getSectionNames(section);
+        for (SectionKey key : statData.getSections()) {
+            List<String> names = statData.getSectionNames(key);
             if (names.size() <= 0) {
                 continue;
             }
 
-            final int minusIdx = section.indexOf('-');
-            final int colonIdx = section.indexOf(':', minusIdx + 1);
-            if (colonIdx < 0) {
-                System.err.println("Bad section name \"" + section + "\"");
-                continue;
-            }
-
-            String compName, beanName;
-            int instNum;
-
-            if (minusIdx < 0) {
-                compName = section.substring(0, colonIdx);
-                instNum = 0;
-                beanName = section.substring(colonIdx + 1);
-            } else {
-                compName = section.substring(0, minusIdx);
-                beanName = section.substring(colonIdx + 1);
-
-                if (minusIdx == colonIdx - 2 &&
-                    section.charAt(minusIdx + 1) == '0')
-                {
-                    instNum = 0;
-                } else {
-                    String numStr = section.substring(minusIdx + 1, colonIdx);
-                    try {
-                        instNum = Integer.parseInt(numStr);
-                    } catch (NumberFormatException nfe) {
-                        System.err.println("Bad instance number \"" + numStr +
-                                           "\" in section \"" + section +
-                                           "\"");
-                        continue;
-                    }
-                }
-            }
+            String compName = key.getComponent();
+            int instNum = key.getInstance();
+            String beanName = key.getSection();
 
             ComponentData compData = (ComponentData) map.get(compName);
             if (compData == null) {
@@ -808,7 +778,7 @@ public class DAQMoniChart
                 continue;
             }
 
-            compInst.create(beanName, names, section);
+            compInst.create(beanName, names, key);
         }
 
         return list;
@@ -816,7 +786,8 @@ public class DAQMoniChart
 
     private void fillTemplatePanel(JTabbedPane topPane, JTabbedPane pane)
     {
-        HashMap map = new HashMap();
+        HashMap<String, Map<String, List<JCheckBox>>> map =
+            new HashMap<String, Map<String, List<JCheckBox>>>();
 
         for (int i = 0; i < topPane.getTabCount(); i++) {
             if (topPane.getTitleAt(i).equals(TEMPLATE_TITLE)) {
@@ -827,9 +798,9 @@ public class DAQMoniChart
             for (int j = 0; j < instPane.getTabCount(); j++) {
                 final String title = instPane.getTitleAt(j);
 
-                HashMap nameMap = (HashMap) map.get(title);
+                Map<String, List<JCheckBox>> nameMap = map.get(title);
                 if (nameMap == null) {
-                    nameMap = new HashMap();
+                    nameMap = new HashMap<String, List<JCheckBox>>();
                     map.put(title, nameMap);
                 }
 
@@ -848,9 +819,9 @@ public class DAQMoniChart
 
                     String label = ckBox.getText();
 
-                    List ckboxList = (List) nameMap.get(label);
+                    List<JCheckBox> ckboxList = nameMap.get(label);
                     if (ckboxList == null) {
-                        ckboxList = new ArrayList();
+                        ckboxList = new ArrayList<JCheckBox>();
                         nameMap.put(label, ckboxList);
                     }
 
@@ -859,16 +830,14 @@ public class DAQMoniChart
             }
         }
 
-        List beanNames = new ArrayList(map.keySet());
+        List<String> beanNames = new ArrayList<String>(map.keySet());
         Collections.sort(beanNames);
 
-        Iterator beanIter = beanNames.iterator();
-        while (beanIter.hasNext()) {
-            final String beanName = (String) beanIter.next();
+        for (String beanName : beanNames) {
 
-            HashMap nameMap = (HashMap) map.get(beanName);
+            Map<String, List<JCheckBox>> nameMap = map.get(beanName);
 
-            List names = new ArrayList((nameMap).keySet());
+            List<String> names = new ArrayList<String>(nameMap.keySet());
             Collections.sort(names);
 
             final int cols = 3;
@@ -877,11 +846,8 @@ public class DAQMoniChart
             JPanel panel = new JPanel();
             panel.setLayout(new GridLayout(rows, cols));
 
-            Iterator iter = names.iterator();
-            while (iter.hasNext()) {
-                String name = (String) iter.next();
-
-                List list = (List) nameMap.get(name);
+            for (String name : names) {
+                List<JCheckBox> list = nameMap.get(name);
 
                 JCheckBox ckbox = new TemplateCheckBox(name, list);
                 panel.add(ckbox);
@@ -914,14 +880,14 @@ public class DAQMoniChart
             JTabbedPane compPane = getPane(tabbedPane, compData.getName());
 
             if (compData.isSingleInstance()) {
-                ComponentInstance compInst = compData.list().get(0);
+                ComponentInstance compInst = compData.getFirst();
 
                 addBeanPanel(compPane, compInst);
             } else {
                 JTabbedPane allPane = new JTabbedPane();
                 compPane.addTab(TEMPLATE_TITLE, allPane);
 
-                for (ComponentInstance compInst : compData.list()) {
+                for (ComponentInstance compInst : compData.iterator()) {
                     JTabbedPane instPane = new JTabbedPane();
                     compPane.addTab(Integer.toString(compInst.getNumber()),
                                       instPane);

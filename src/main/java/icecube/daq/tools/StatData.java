@@ -9,7 +9,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.TimeZone;
 import java.util.regex.Matcher;
@@ -80,9 +79,8 @@ class LongStat
         TimeSeries series = new TimeSeries(seriesName, Second.class);
         coll.addSeries(series);
 
-        Iterator iter = iterator();
-        while (iter.hasNext()) {
-            LongData data = (LongData) iter.next();
+        for (BaseData bd : iterator()) {
+            LongData data = (LongData) bd;
 
             try {
                 series.add(data.getTime().getSecond(), data.getValue());
@@ -108,9 +106,8 @@ class LongStat
         long prevVal = 0;
         boolean firstVal = true;
 
-        Iterator iter = iterator();
-        while (iter.hasNext()) {
-            LongData data = (LongData) iter.next();
+        for (BaseData bd : iterator()) {
+            LongData data = (LongData) bd;
 
             if (firstVal) {
                 firstVal = false;
@@ -140,14 +137,11 @@ class LongStat
         TimeSeries series = new TimeSeries(seriesName, Second.class);
         coll.addSeries(series);
 
-        Iterator iter;
-
         long minVal = Long.MAX_VALUE;
         long maxVal = Long.MIN_VALUE;
 
-        iter = iterator();
-        while (iter.hasNext()) {
-            LongData data = (LongData) iter.next();
+        for (BaseData bd : iterator()) {
+            LongData data = (LongData) bd;
 
             if (data.getValue() < minVal) {
                 minVal = data.getValue();
@@ -159,9 +153,8 @@ class LongStat
 
         double div = maxVal - minVal;
 
-        iter = iterator();
-        while (iter.hasNext()) {
-            LongData data = (LongData) iter.next();
+        for (BaseData bd : iterator()) {
+            LongData data = (LongData) bd;
 
             double val = ((double) (data.getValue() - minVal)) / div;
             try {
@@ -286,9 +279,8 @@ class DoubleStat
         TimeSeries series = new TimeSeries(seriesName, Second.class);
         coll.addSeries(series);
 
-        Iterator iter = iterator();
-        while (iter.hasNext()) {
-            DoubleData data = (DoubleData) iter.next();
+        for (BaseData bd : iterator()) {
+            DoubleData data = (DoubleData) bd;
 
             try {
                 series.add(data.getTime().getSecond(), data.getValue());
@@ -314,9 +306,8 @@ class DoubleStat
         double prevVal = 0;
         boolean firstVal = true;
 
-        Iterator iter = iterator();
-        while (iter.hasNext()) {
-            DoubleData data = (DoubleData) iter.next();
+        for (BaseData bd : iterator()) {
+            DoubleData data = (DoubleData) bd;
 
             if (firstVal) {
                 firstVal = false;
@@ -346,14 +337,11 @@ class DoubleStat
         TimeSeries series = new TimeSeries(seriesName, Second.class);
         coll.addSeries(series);
 
-        Iterator iter;
-
         double minVal = Double.MAX_VALUE;
         double maxVal = Double.MIN_VALUE;
 
-        iter = iterator();
-        while (iter.hasNext()) {
-            DoubleData data = (DoubleData) iter.next();
+        for (BaseData bd : iterator()) {
+            DoubleData data = (DoubleData) bd;
 
             if (data.getValue() < minVal) {
                 minVal = data.getValue();
@@ -365,9 +353,8 @@ class DoubleStat
 
         double div = maxVal - minVal;
 
-        iter = iterator();
-        while (iter.hasNext()) {
-            DoubleData data = (DoubleData) iter.next();
+        for (BaseData bd : iterator()) {
+            DoubleData data = (DoubleData) bd;
 
             double val = (data.getValue() - minVal) / div;
 
@@ -510,9 +497,8 @@ class MemoryStat
         TimeSeries freeSeries = new TimeSeries(prefix + "Total", Second.class);
         coll.addSeries(freeSeries);
 
-        Iterator iter = iterator();
-        while (iter.hasNext()) {
-            MemoryData data = (MemoryData) iter.next();
+        for (BaseData bd : iterator()) {
+            MemoryData data = (MemoryData) bd;
 
             try {
                 usedSeries.add(data.getTime().getSecond(),
@@ -554,9 +540,8 @@ class MemoryStat
         long prevFree = 0;
         boolean firstVal = true;
 
-        Iterator iter = iterator();
-        while (iter.hasNext()) {
-            MemoryData data = (MemoryData) iter.next();
+        for (BaseData bd : iterator()) {
+            MemoryData data = (MemoryData) bd;
 
             if (firstVal) {
                 firstVal = false;
@@ -602,14 +587,11 @@ class MemoryStat
         TimeSeries freeSeries = new TimeSeries(prefix + "Total", Second.class);
         coll.addSeries(freeSeries);
 
-        Iterator iter;
-
         long minVal = Long.MAX_VALUE;
         long maxVal = Long.MIN_VALUE;
 
-        iter = iterator();
-        while (iter.hasNext()) {
-            MemoryData data = (MemoryData) iter.next();
+        for (BaseData bd : iterator()) {
+            MemoryData data = (MemoryData) bd;
 
             if (data.getUsedMemory() < minVal) {
                 minVal = data.getUsedMemory();
@@ -627,9 +609,8 @@ class MemoryStat
 
         double div = maxVal - minVal;
 
-        iter = iterator();
-        while (iter.hasNext()) {
-            MemoryData data = (MemoryData) iter.next();
+        for (BaseData bd : iterator()) {
+            MemoryData data = (MemoryData) bd;
 
             double used = ((double) (data.getUsedMemory() - minVal)) / div;
             try {
@@ -931,9 +912,8 @@ class StrandStat
             coll.addSeries(series[i]);
         }
 
-        Iterator iter = iterator();
-        while (iter.hasNext()) {
-            StrandData data = (StrandData) iter.next();
+        for (BaseData bd : iterator()) {
+            StrandData data = (StrandData) bd;
 
             for (int i = 0; i < numStrands; i++) {
                 series[i].add(data.getTime().getSecond(), data.getStrand(i));
@@ -957,9 +937,8 @@ class StrandStat
         long[] prevVal = new long[numStrands];
         boolean firstVal = true;
 
-        Iterator iter = iterator();
-        while (iter.hasNext()) {
-            StrandData data = (StrandData) iter.next();
+        for (BaseData bd : iterator()) {
+            StrandData data = (StrandData) bd;
 
             if (firstVal) {
                 firstVal = false;
@@ -989,14 +968,11 @@ class StrandStat
             coll.addSeries(series[i]);
         }
 
-        Iterator iter;
-
         long minVal = Long.MAX_VALUE;
         long maxVal = Long.MIN_VALUE;
 
-        iter = iterator();
-        while (iter.hasNext()) {
-            StrandData data = (StrandData) iter.next();
+        for (BaseData bd : iterator()) {
+            StrandData data = (StrandData) bd;
 
             for (int i = 0; i < numStrands; i++) {
                 long strand = data.getStrand(i);
@@ -1012,9 +988,8 @@ class StrandStat
 
         double div = maxVal - minVal;
 
-        iter = iterator();
-        while (iter.hasNext()) {
-            StrandData data = (StrandData) iter.next();
+        for (BaseData bd : iterator()) {
+            StrandData data = (StrandData) bd;
 
             for (int i = 0; i < numStrands; i++) {
                 double val = ((double) (data.getStrand(i) - minVal)) / div;
@@ -1146,9 +1121,8 @@ class TriggerStat
             new TimeSeries(name + " Trigger", Second.class);
         coll.addSeries(trigSeries);
 
-        Iterator iter = iterator();
-        while (iter.hasNext()) {
-            TriggerData data = (TriggerData) iter.next();
+        for (BaseData bd : iterator()) {
+            TriggerData data = (TriggerData) bd;
 
             try {
                 valSeries.add(data.getTime().getSecond(), data.getValue());
@@ -1190,9 +1164,8 @@ class TriggerStat
         double prevTrig = 0.0;
         boolean firstVal = true;
 
-        Iterator iter = iterator();
-        while (iter.hasNext()) {
-            TriggerData data = (TriggerData) iter.next();
+        for (BaseData bd : iterator()) {
+            TriggerData data = (TriggerData) bd;
 
             if (firstVal) {
                 firstVal = false;
@@ -1237,16 +1210,13 @@ class TriggerStat
             new TimeSeries(name + " Trigger", Second.class);
         coll.addSeries(trigSeries);
 
-        Iterator iter;
-
         long minVal = Long.MAX_VALUE;
         long maxVal = Long.MIN_VALUE;
         double minDbl = Double.MIN_VALUE;
         double maxDbl = Double.MAX_VALUE;
 
-        iter = iterator();
-        while (iter.hasNext()) {
-            TriggerData data = (TriggerData) iter.next();
+        for (BaseData bd : iterator()) {
+            TriggerData data = (TriggerData) bd;
 
             if (data.getValue() < minVal) {
                 minVal = data.getValue();
@@ -1266,9 +1236,8 @@ class TriggerStat
         double div = maxVal - minVal;
         double dblDiv = maxDbl - minDbl;
 
-        iter = iterator();
-        while (iter.hasNext()) {
-            TriggerData data = (TriggerData) iter.next();
+        for (BaseData bd : iterator()) {
+            TriggerData data = (TriggerData) bd;
 
             double val = ((double) (data.getValue() - minVal)) / div;
             try {
@@ -1392,9 +1361,9 @@ class TimingPiece
 class TimingData
     extends BaseData
 {
-    private ArrayList list;
+    private List<TimingPiece> list;
 
-    TimingData(ChartTime time, ArrayList list)
+    TimingData(ChartTime time, List<TimingPiece> list)
     {
         super(time);
 
@@ -1405,13 +1374,12 @@ class TimingData
     {
         StringBuffer buf = new StringBuffer();
 
-        Iterator iter = list.iterator();
-        while (iter.hasNext()) {
+        for (Object obj : list) {
             if (buf.length() > 0) {
                 buf.append(' ');
             }
 
-            buf.append(iter.next().toString());
+            buf.append(obj.toString());
         }
 
         return buf.toString();
@@ -1422,9 +1390,9 @@ class TimingData
         return new TimingStat();
     }
 
-    Iterator iterator()
+    Iterable<TimingPiece> iterator()
     {
-        return list.iterator();
+        return list;
     }
 
     boolean isEmpty()
@@ -1441,7 +1409,7 @@ class TimingStat
     private static final Pattern PIECE_PAT =
         Pattern.compile("\\s*([^:]+):\\s(\\d+)/(\\d+)=(\\d+)#(\\d+\\.?\\d*%)");
 
-    private ArrayList titles = new ArrayList();
+    private ArrayList<String> titles = new ArrayList<String>();
 
     TimingStat()
     {
@@ -1451,9 +1419,7 @@ class TimingStat
     {
         TimingData tData = (TimingData) data;
 
-        Iterator iter = tData.iterator();
-        while (iter.hasNext()) {
-            TimingPiece piece = (TimingPiece) iter.next();
+        for (TimingPiece piece : tData.iterator()) {
             if (!titles.contains(piece.getTitle())) {
                 titles.add(piece.getTitle());
             }
@@ -1497,14 +1463,10 @@ class TimingStat
             prevVal[i] = 0;
         }
 
-        Iterator iter = iterator();
-        while (iter.hasNext()) {
-            TimingData data = (TimingData) iter.next();
+        for (BaseData bd : iterator()) {
+            TimingData data = (TimingData) bd;
 
-            Iterator dIter = data.iterator();
-            while (dIter.hasNext()) {
-                TimingPiece piece = (TimingPiece) dIter.next();
-
+            for (TimingPiece piece : data.iterator()) {
                 int idx = titles.indexOf(piece.getTitle());
 
                 double val = getValue(piece);
@@ -1538,7 +1500,6 @@ class TimingStat
         }
 
         double[] prevVal = new double[series.length];
-        Iterator iter;
 
         double[] minVal = new double[series.length];
         double[] maxVal = new double[series.length];
@@ -1551,14 +1512,10 @@ class TimingStat
             prevVal[i] = 0;
         }
 
-        iter = iterator();
-        while (iter.hasNext()) {
-            TimingData data = (TimingData) iter.next();
+        for (BaseData bd : iterator()) {
+            TimingData data = (TimingData) bd;
 
-            Iterator dIter = data.iterator();
-            while (dIter.hasNext()) {
-                TimingPiece piece = (TimingPiece) dIter.next();
-
+            for (TimingPiece piece : data.iterator()) {
                 int idx = titles.indexOf(piece.getTitle());
 
                 double val = getValue(piece);
@@ -1585,14 +1542,10 @@ class TimingStat
             prevVal[i] = 0;
         }
 
-        iter = iterator();
-        while (iter.hasNext()) {
-            TimingData data = (TimingData) iter.next();
+        for (BaseData bd : iterator()) {
+            TimingData data = (TimingData) bd;
 
-            Iterator dIter = data.iterator();
-            while (dIter.hasNext()) {
-                TimingPiece piece = (TimingPiece) dIter.next();
-
+            for (TimingPiece piece : data.iterator()) {
                 int idx = titles.indexOf(piece.getTitle());
 
                 double val = getValue(piece);
@@ -1633,7 +1586,7 @@ class TimingStat
 
         String name = matcher.group(1);
 
-        ArrayList timing = null;
+        ArrayList<TimingPiece> timing = null;
 
         int startPos = 0;
         while (true) {
@@ -1656,7 +1609,7 @@ class TimingStat
             }
 
             if (timing == null) {
-                timing = new ArrayList();
+                timing = new ArrayList<TimingPiece>();
             }
             timing.add(data);
 
@@ -1898,9 +1851,8 @@ class ListStat
             coll.addSeries(series[i]);
         }
 
-        Iterator iter = iterator();
-        while (iter.hasNext()) {
-            ListData data = (ListData) iter.next();
+        for (BaseData bd : iterator()) {
+            ListData data = (ListData) bd;
 
             for (int i = 0; i < numEntries; i++) {
                 series[i].add(data.getTime().getSecond(), data.getRawValue(i));
@@ -1924,9 +1876,8 @@ class ListStat
         double[] prevVal = new double[numEntries];
         boolean firstVal = true;
 
-        Iterator iter = iterator();
-        while (iter.hasNext()) {
-            ListData data = (ListData) iter.next();
+        for (BaseData bd : iterator()) {
+            ListData data = (ListData) bd;
 
             if (firstVal) {
                 firstVal = false;
@@ -1956,14 +1907,11 @@ class ListStat
             coll.addSeries(series[i]);
         }
 
-        Iterator iter;
-
         double minVal = Double.MAX_VALUE;
         double maxVal = Double.MIN_VALUE;
 
-        iter = iterator();
-        while (iter.hasNext()) {
-            ListData data = (ListData) iter.next();
+        for (BaseData bd : iterator()) {
+            ListData data = (ListData) bd;
 
             for (int i = 0; i < numEntries; i++) {
                 double entry = data.getRawValue(i);
@@ -1979,9 +1927,8 @@ class ListStat
 
         double div = maxVal - minVal;
 
-        iter = iterator();
-        while (iter.hasNext()) {
-            ListData data = (ListData) iter.next();
+        for (BaseData bd : iterator()) {
+            ListData data = (ListData) bd;
 
             for (int i = 0; i < numEntries; i++) {
                 double val = (data.getRawValue(i) - minVal) / div;
@@ -2558,7 +2505,8 @@ if(!omitDataCollector)try{throw new Error("StackTrace");}catch(Error e){ e.print
 
 public class StatData
 {
-    private HashMap sectionMap = new HashMap();
+    private HashMap<SectionKey, HashMap<String, StatParent>> sectionMap =
+        new HashMap<SectionKey, HashMap<String, StatParent>>();
 
     public StatData()
     {
@@ -2623,26 +2571,24 @@ public class StatData
 
     public void add(String host, String section, String name, BaseData datum)
     {
+/*
         String key;
         if (host == null) {
             key = section;
         } else {
             key = host + ":" + section;
         }
+*/
+        SectionKey key = new SectionKey(host, section);
 
-        add(key, name, datum);
-    }
-
-    public void add(String section, String name, BaseData datum)
-    {
-        if (!sectionMap.containsKey(section)) {
-            sectionMap.put(section, new HashMap());
+        if (!sectionMap.containsKey(key)) {
+            sectionMap.put(key, new HashMap<String, StatParent>());
         }
 
         StatParent parent;
         boolean isCreated;
 
-        HashMap statMap = (HashMap) sectionMap.get(section);
+        HashMap<String, StatParent> statMap = sectionMap.get(key);
         if (statMap.containsKey(name)) {
             parent = (StatParent) statMap.get(name);
             isCreated = false;
@@ -2656,7 +2602,7 @@ public class StatData
             parent.add(datum);
         } catch (ClassCastException cce) {
             if (isCreated || !parent.isEmpty()) {
-                throw new RuntimeException("Cannot add " + section + ":" +
+                throw new RuntimeException("Cannot add " + key + ":" +
                                            name + " datum " + datum, cce);
             }
 
@@ -2665,42 +2611,43 @@ public class StatData
 
             statMap.put(name, parent);
         } catch (Error err) {
-            System.err.println("Cannot add " + section + ":" + name +
+            System.err.println("Cannot add " + key + ":" + name +
                                " datum " + datum + ": " +  err.getMessage());
         }
     }
 
-    public List getSectionNames(String section)
+    public List<String> getSectionNames(SectionKey key)
     {
-        if (!sectionMap.containsKey(section)) {
+        if (!sectionMap.containsKey(key)) {
             return null;
         }
 
-        ArrayList names =
-            new ArrayList(((HashMap) sectionMap.get(section)).keySet());
+        ArrayList<String> names =
+            new ArrayList<String>(sectionMap.get(key).keySet());
         Collections.sort(names);
         return names;
     }
 
-    public Collection getSections()
+    public List<SectionKey> getSections()
     {
-        ArrayList sections = new ArrayList(sectionMap.keySet());
+        ArrayList<SectionKey> sections =
+            new ArrayList<SectionKey>(sectionMap.keySet());
         Collections.sort(sections);
         return sections;
     }
 
-    public StatParent getStatistics(String section, String name)
+    public StatParent getStatistics(SectionKey section, String name)
     {
         if (!sectionMap.containsKey(section)) {
             return null;
         }
 
-        HashMap nameMap = (HashMap) sectionMap.get(section);
+        HashMap<String, StatParent> nameMap = sectionMap.get(section);
         if (nameMap == null || !nameMap.containsKey(name)) {
             return null;
         }
 
-        return (StatParent) nameMap.get(name);
+        return nameMap.get(name);
     }
 
     public String toString()
@@ -2708,14 +2655,14 @@ public class StatData
         StringBuffer buf = new StringBuffer("StatData[");
 
         boolean needComma = false;
-        for (Iterator iter = sectionMap.keySet().iterator(); iter.hasNext();) {
+        for (SectionKey key : sectionMap.keySet()) {
             if (needComma) {
                 buf.append(',');
             } else {
                 needComma = true;
             }
 
-            buf.append(iter.next());
+            buf.append(key);
         }
         buf.append(']');
 
