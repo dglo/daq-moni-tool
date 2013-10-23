@@ -32,27 +32,30 @@ public abstract class StatParent
     }
 
     public TimeSeriesCollection plot(SectionKey key, String name,
-                                     boolean useLongName)
+                                     PlotArguments pargs)
     {
-        return plot(new TimeSeriesCollection(), key, name, useLongName);
+        return plot(new TimeSeriesCollection(), key, name, pargs);
     }
 
     public abstract TimeSeriesCollection plot(TimeSeriesCollection coll,
                                               SectionKey key, String name,
-                                              boolean useLongName);
+                                              PlotArguments pargs);
 
-    public TimeSeriesCollection plotDelta(SectionKey key, String name)
+    public TimeSeriesCollection plotDelta(SectionKey key, String name,
+                                          PlotArguments pargs)
     {
-        return plotDelta(new TimeSeriesCollection(), key, name);
+        return plotDelta(new TimeSeriesCollection(), key, name, pargs);
     }
 
     public abstract TimeSeriesCollection plotDelta(TimeSeriesCollection coll,
                                                    SectionKey key,
-                                                   String name);
+                                                   String name,
+                                                   PlotArguments pargs);
 
     public abstract TimeSeriesCollection plotScaled(TimeSeriesCollection coll,
                                                     SectionKey key,
-                                                    String name);
+                                                    String name,
+                                                    PlotArguments pargs);
 
     public boolean showLegend()
     {
