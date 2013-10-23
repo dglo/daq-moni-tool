@@ -152,36 +152,6 @@ public class ChartGenerator
         return bigImg;
     }
 
-    private String getSectionTitle(List<ComponentData> compList)
-    {
-        String secTitle = null;
-
-        for (ComponentData cd : compList) {
-            for (ComponentInstance ci : cd.iterator()) {
-
-                boolean foundInst = false;
-                for (InstanceBean bean : ci.iterator()) {
-                    if (bean.hasGraphs()) {
-                        foundInst = true;
-                        break;
-                    }
-                }
-
-                if (foundInst) {
-                    final String compInstName =
-                        cd.getName() + "-" + ci.getNumber();
-                    if (secTitle == null) {
-                        secTitle = compInstName;
-                    } else {
-                        secTitle = secTitle + "+" + compInstName;
-                    }
-                }
-            }
-        }
-
-        return secTitle;
-    }
-
     public String getTitle()
     {
         return title;
@@ -286,15 +256,6 @@ public class ChartGenerator
         return panel;
     }
 
-    String makeTitle(GraphSource src)
-    {
-        if (title == null || title.length() == 0) {
-            return src.toString();
-        }
-
-        return src.toString() + ": " + title;
-    }
-
     private void showCombined(List<ComponentData> compList, StatData statData,
                               ChartChoices choices)
     {
@@ -303,7 +264,9 @@ public class ChartGenerator
         final boolean scale =
             (choices.getType() == ChartChoices.SHOW_SCALED);
 
-        title = getSectionTitle(compList);
+        PlotArguments pargs = new PlotArguments(compList, false);
+
+        title = pargs.getSectionTitle(compList);
 
         TimeSeriesCollection coll = new TimeSeriesCollection();
         coll.setDomainIsPointsInTime(true);
@@ -327,9 +290,10 @@ public class ChartGenerator
                         }
 
                         if (scale) {
-                            stat.plotScaled(coll, bean.getSectionKey(), name);
+                            stat.plotScaled(coll, bean.getSectionKey(), name,
+                                            pargs);
                         } else {
-                            stat.plot(coll, bean.getSectionKey(), name, true);
+                            stat.plot(coll, bean.getSectionKey(), name, pargs);
                         }
                         numCharted++;
                     }
@@ -368,31 +332,9 @@ public class ChartGenerator
 
         final boolean delta = (choices.getType() == ChartChoices.SHOW_DELTA);
 
-        title = getSectionTitle(compList);
+        PlotArguments pargs = new PlotArguments(compList, false);
 
-        HashMap<String, List> collisions = new HashMap<String, List>();
-        for (ComponentData cd : compList) {
-            for (ComponentInstance ci : cd.iterator()) {
-                for (InstanceBean bean : ci.iterator()) {
-                    if (!bean.hasGraphs()) {
-                        continue;
-                    }
-
-                    Iterable<String> iter;
-                    if (showAll || bean.isIncludeAll()) {
-                        iter = bean.iterator();
-                    } else {
-                        iter = bean.graphIterator();
-                    }
-                    for (String name : iter) {
-                        if (!collisions.containsKey(name)) {
-                            collisions.put(name, new ArrayList());
-                        }
-                        collisions.get(name).add(bean);
-                    }
-                }
-            }
-        }
+        title = pargs.getSectionTitle(compList);
 
         for (ComponentData cd : compList) {
             for (ComponentInstance ci : cd.iterator()) {
@@ -417,9 +359,10 @@ public class ChartGenerator
                         TimeSeriesCollection coll;
                         if (!delta) {
                             coll =
-                                stat.plot(bean.getSectionKey(), name, false);
+                                stat.plot(bean.getSectionKey(), name, pargs);
                         } else {
-                            coll = stat.plotDelta(bean.getSectionKey(), name);
+                            coll = stat.plotDelta(bean.getSectionKey(), name,
+                                                  pargs);
                         }
 
                         boolean showLegend =
@@ -436,17 +379,7 @@ public class ChartGenerator
                             deltaStr = "Delta ";
                         }
 
-                        final boolean collides =
-                            collisions.get(name).size() > 1;
-                        if (multiSection) {
-                            chartName = deltaStr +
-                                bean.getSectionKey().toString() + " " + name;
-                        } else if (collides) {
-                            chartName =
-                                deltaStr + bean.getName() + " " + name;
-                        } else {
-                            chartName = deltaStr + name;
-                        }
+                        chartName = pargs.getName(bean.getSectionKey(), name);
 
                         addChart(chartName, coll, showLegend,
                                  choices.showPoints());

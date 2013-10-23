@@ -67,14 +67,9 @@ class LongStat
     }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, SectionKey key,
-                                     String name, boolean useLongName)
+                                     String name, PlotArguments pargs)
     {
-        final String seriesName;
-        if (!useLongName) {
-            seriesName = name;
-        } else {
-            seriesName = key + " " + name;
-        }
+        final String seriesName = pargs.getName(key, name);
 
         TimeSeries series = new TimeSeries(seriesName, Second.class);
         coll.addSeries(series);
@@ -96,7 +91,8 @@ class LongStat
     }
 
     public TimeSeriesCollection plotDelta(TimeSeriesCollection coll,
-                                          SectionKey key, String name)
+                                          SectionKey key, String name,
+                                          PlotArguments pargs)
     {
         final String seriesName = key + " " + name;
 
@@ -130,7 +126,8 @@ class LongStat
     }
 
     public TimeSeriesCollection plotScaled(TimeSeriesCollection coll,
-                                           SectionKey key, String name)
+                                           SectionKey key, String name,
+                                           PlotArguments pargs)
     {
         final String seriesName = key + " " + name;
 
@@ -267,14 +264,9 @@ class DoubleStat
     }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, SectionKey key,
-                                     String name, boolean useLongName)
+                                     String name, PlotArguments pargs)
     {
-        final String seriesName;
-        if (!useLongName) {
-            seriesName = name;
-        } else {
-            seriesName = key + " " + name;
-        }
+        final String seriesName = pargs.getName(key, name);
 
         TimeSeries series = new TimeSeries(seriesName, Second.class);
         coll.addSeries(series);
@@ -296,7 +288,8 @@ class DoubleStat
     }
 
     public TimeSeriesCollection plotDelta(TimeSeriesCollection coll,
-                                          SectionKey key, String name)
+                                          SectionKey key, String name,
+                                          PlotArguments pargs)
     {
         final String seriesName = key + " " + name;
 
@@ -330,7 +323,8 @@ class DoubleStat
     }
 
     public TimeSeriesCollection plotScaled(TimeSeriesCollection coll,
-                                           SectionKey key, String name)
+                                           SectionKey key, String name,
+                                           PlotArguments pargs)
     {
         final String seriesName = key + " " + name;
 
@@ -482,14 +476,9 @@ class MemoryStat
     }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, SectionKey key,
-                                     String name, boolean useLongName)
+                                     String name, PlotArguments pargs)
     {
-        final String prefix;
-        if (!useLongName) {
-            prefix = "";
-        } else {
-            prefix = key + " " + name + " ";
-        }
+        final String prefix = pargs.getPrefix(key, name);
 
         TimeSeries usedSeries = new TimeSeries(prefix + "Used", Second.class);
         coll.addSeries(usedSeries);
@@ -526,7 +515,8 @@ class MemoryStat
     }
 
     public TimeSeriesCollection plotDelta(TimeSeriesCollection coll,
-                                          SectionKey key, String name)
+                                          SectionKey key, String name,
+                                          PlotArguments pargs)
     {
         final String prefix = key + " " + name + " ";
 
@@ -577,7 +567,8 @@ class MemoryStat
     }
 
     public TimeSeriesCollection plotScaled(TimeSeriesCollection coll,
-                                           SectionKey key, String name)
+                                           SectionKey key, String name,
+                                           PlotArguments pargs)
     {
         final String prefix = key + " " + name + " ";
 
@@ -759,21 +750,23 @@ class StringStat
     }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, SectionKey key,
-                                     String name, boolean useLongName)
+                                     String name, PlotArguments pargs)
     {
         // do nothing
         return coll;
     }
 
     public TimeSeriesCollection plotDelta(TimeSeriesCollection coll,
-                                          SectionKey key, String name)
+                                          SectionKey key, String name,
+                                          PlotArguments pargs)
     {
         // do nothing
         return coll;
     }
 
     public TimeSeriesCollection plotScaled(TimeSeriesCollection coll,
-                                           SectionKey key, String name)
+                                           SectionKey key, String name,
+                                           PlotArguments pargs)
     {
         // do nothing
         return coll;
@@ -897,14 +890,9 @@ class StrandStat
     }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, SectionKey key,
-                                     String name, boolean useLongName)
+                                     String name, PlotArguments pargs)
     {
-        final String prefix;
-        if (!useLongName) {
-            prefix = "";
-        } else {
-            prefix = key + " " + name + " ";
-        }
+        final String prefix = pargs.getPrefix(key, name);
 
         TimeSeries[] series = new TimeSeries[numStrands];
         for (int i = 0; i < series.length; i++) {
@@ -924,7 +912,8 @@ class StrandStat
     }
 
     public TimeSeriesCollection plotDelta(TimeSeriesCollection coll,
-                                          SectionKey key, String name)
+                                          SectionKey key, String name,
+                                          PlotArguments pargs)
     {
         final String prefix = key + " " + name + " ";
 
@@ -958,7 +947,8 @@ class StrandStat
     }
 
     public TimeSeriesCollection plotScaled(TimeSeriesCollection coll,
-                                           SectionKey key, String name)
+                                           SectionKey key, String name,
+                                           PlotArguments pargs)
     {
         final String prefix = key + " " + name + " ";
 
@@ -1105,14 +1095,9 @@ class TriggerStat
     }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, SectionKey key,
-                                     String name, boolean useLongName)
+                                     String name, PlotArguments pargs)
     {
-        final String seriesName;
-        if (!useLongName) {
-            seriesName = name;
-        } else {
-            seriesName = key + " " + name;
-        }
+        final String seriesName = pargs.getName(key, name);
 
         TimeSeries valSeries = new TimeSeries(seriesName, Second.class);
         coll.addSeries(valSeries);
@@ -1149,7 +1134,8 @@ class TriggerStat
     }
 
     public TimeSeriesCollection plotDelta(TimeSeriesCollection coll,
-                                          SectionKey key, String name)
+                                          SectionKey key, String name,
+                                          PlotArguments pargs)
     {
         final String seriesName = key + " " + name;
 
@@ -1199,7 +1185,8 @@ class TriggerStat
     }
 
     public TimeSeriesCollection plotScaled(TimeSeriesCollection coll,
-                                           SectionKey key, String name)
+                                           SectionKey key, String name,
+                                           PlotArguments pargs)
     {
         final String seriesName = key + " " + name;
 
@@ -1442,14 +1429,9 @@ class TimingStat
     }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, SectionKey key,
-                                     String name, boolean useLongName)
+                                     String name, PlotArguments pargs)
     {
-        final String prefix;
-        if (!useLongName) {
-            prefix = "";
-        } else {
-            prefix = key + " " + name + " ";
-        }
+        final String prefix = pargs.getPrefix(key, name);
 
         TimeSeries[] series = new TimeSeries[titles.size()];
         for (int i = 0; i < series.length; i++) {
@@ -1483,13 +1465,15 @@ class TimingStat
     }
 
     public TimeSeriesCollection plotDelta(TimeSeriesCollection coll,
-                                          SectionKey key, String name)
+                                          SectionKey key, String name,
+                                          PlotArguments pargs)
     {
-        return plot(coll, key, name, false);
+        return plot(coll, key, name, pargs);
     }
 
     public TimeSeriesCollection plotScaled(TimeSeriesCollection coll,
-                                           SectionKey key, String name)
+                                           SectionKey key, String name,
+                                           PlotArguments pargs)
     {
         final String prefix = key + " " + name + " ";
 
@@ -1836,14 +1820,9 @@ class ListStat
     }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, SectionKey key,
-                                     String name, boolean useLongName)
+                                     String name, PlotArguments pargs)
     {
-        final String prefix;
-        if (!useLongName) {
-            prefix = "";
-        } else {
-            prefix = key + " " + name + " ";
-        }
+        final String prefix = pargs.getPrefix(key, name);
 
         TimeSeries[] series = new TimeSeries[numEntries];
         for (int i = 0; i < series.length; i++) {
@@ -1863,7 +1842,8 @@ class ListStat
     }
 
     public TimeSeriesCollection plotDelta(TimeSeriesCollection coll,
-                                          SectionKey key, String name)
+                                          SectionKey key, String name,
+                                          PlotArguments pargs)
     {
         final String prefix = key + " " + name + " ";
 
@@ -1897,7 +1877,8 @@ class ListStat
     }
 
     public TimeSeriesCollection plotScaled(TimeSeriesCollection coll,
-                                           SectionKey key, String name)
+                                           SectionKey key, String name,
+                                           PlotArguments pargs)
     {
         final String prefix = key + " " + name + " ";
 
@@ -2355,7 +2336,6 @@ final class PDAQParser
     private PDAQParser(String sectionHost, String sectionName,
                        boolean omitDataCollector)
     {
-if(!omitDataCollector)try{throw new Error("StackTrace");}catch(Error e){ e.printStackTrace();}
         this.sectionHost = sectionHost;
         this.sectionName = sectionName;
         this.omitDataCollector = omitDataCollector;
