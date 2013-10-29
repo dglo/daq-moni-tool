@@ -304,7 +304,7 @@ abstract class SectionChoicesCheckBox
     void setShowSelected()
     {
         if (typeButtons.disableShowAll()) {
-            chartChoices.setType(ChartChoices.SHOW_SELECTED);
+            chartChoices.setType(ChartType.SELECTED);
         }
     }
 }
@@ -592,7 +592,7 @@ public class DAQMoniChart
         showAllBtn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt)
                 {
-                    chartChoices.setType(ChartChoices.SHOW_ALL);
+                    chartChoices.setType(ChartType.ALL);
                     typeButtons.clearAll();
                 }
             });
@@ -606,7 +606,7 @@ public class DAQMoniChart
         showSelBtn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt)
                 {
-                    chartChoices.setType(ChartChoices.SHOW_SELECTED);
+                    chartChoices.setType(ChartType.SELECTED);
                 }
             });
         panel.add(showSelBtn);
@@ -619,7 +619,7 @@ public class DAQMoniChart
         deltaSelBtn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt)
                 {
-                    chartChoices.setType(ChartChoices.SHOW_DELTA);
+                    chartChoices.setType(ChartType.DELTA);
                 }
             });
         panel.add(deltaSelBtn);
@@ -631,7 +631,7 @@ public class DAQMoniChart
         combineSelBtn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt)
                 {
-                    chartChoices.setType(ChartChoices.SHOW_COMBINED);
+                    chartChoices.setType(ChartType.COMBINED);
                 }
             });
         panel.add(combineSelBtn);
@@ -643,7 +643,7 @@ public class DAQMoniChart
         scaleSelBtn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt)
                 {
-                    chartChoices.setType(ChartChoices.SHOW_SCALED);
+                    chartChoices.setType(ChartType.SCALED);
                 }
             });
         panel.add(scaleSelBtn);
@@ -655,14 +655,14 @@ public class DAQMoniChart
         scaleLogBtn.addActionListener(new ActionListener() {
                 public void actionPerformed(ActionEvent evt)
                 {
-                    chartChoices.setType(ChartChoices.SHOW_LOGARITHMIC);
+                    chartChoices.setType(ChartType.LOGARITHMIC);
                 }
             });
         panel.add(scaleLogBtn);
         group.add(scaleLogBtn);
 
         showAllBtn.setSelected(true);
-        chartChoices.setType(ChartChoices.SHOW_ALL);
+        chartChoices.setType(ChartType.ALL);
 
         return panel;
     }

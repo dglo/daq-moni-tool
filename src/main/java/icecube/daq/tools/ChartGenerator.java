@@ -39,14 +39,14 @@ public class ChartGenerator
     ChartGenerator(List<ComponentData> compList, StatData statData,
                    ChartChoices choices)
     {
-        if (choices.getType() == ChartChoices.SHOW_ALL ||
-            choices.getType() == ChartChoices.SHOW_SELECTED ||
-            choices.getType() == ChartChoices.SHOW_DELTA)
+        if (choices.getType() == ChartType.ALL ||
+            choices.getType() == ChartType.SELECTED ||
+            choices.getType() == ChartType.DELTA)
         {
             showMultiple(compList, statData, choices);
-        } else if (choices.getType() == ChartChoices.SHOW_COMBINED ||
-                   choices.getType() == ChartChoices.SHOW_SCALED ||
-                   choices.getType() == ChartChoices.SHOW_LOGARITHMIC)
+        } else if (choices.getType() == ChartType.COMBINED ||
+                   choices.getType() == ChartType.SCALED ||
+                   choices.getType() == ChartType.LOGARITHMIC)
         {
             showCombined(compList, statData, choices);
         } else {
@@ -178,11 +178,11 @@ public class ChartGenerator
 
         if (compList.size() <= 1) {
             rtnVal = false;
-        } else if (choices.getType() == ChartChoices.SHOW_COMBINED ||
-            choices.getType() == ChartChoices.SHOW_SCALED)
+        } else if (choices.getType() == ChartType.COMBINED ||
+            choices.getType() == ChartType.SCALED)
         {
             rtnVal = false;
-        } else if (choices.getType() == ChartChoices.SHOW_ALL) {
+        } else if (choices.getType() == ChartType.ALL) {
             rtnVal = true;
         } else {
             rtnVal = false;
@@ -276,9 +276,9 @@ public class ChartGenerator
         final boolean multiSection = hasMultipleSections(compList, choices);
 
         final boolean scale =
-            (choices.getType() == ChartChoices.SHOW_SCALED);
+            (choices.getType() == ChartType.SCALED);
         final boolean logAxis =
-            (choices.getType() == ChartChoices.SHOW_LOGARITHMIC);
+            (choices.getType() == ChartType.LOGARITHMIC);
 
         PlotArguments pargs = new PlotArguments(compList, false);
 
@@ -347,9 +347,9 @@ public class ChartGenerator
     {
         final boolean multiSection = hasMultipleSections(compList, choices);
 
-        final boolean showAll = (choices.getType() == ChartChoices.SHOW_ALL);
+        final boolean showAll = (choices.getType() == ChartType.ALL);
 
-        final boolean delta = (choices.getType() == ChartChoices.SHOW_DELTA);
+        final boolean delta = (choices.getType() == ChartType.DELTA);
 
         PlotArguments pargs = new PlotArguments(compList, false);
 
