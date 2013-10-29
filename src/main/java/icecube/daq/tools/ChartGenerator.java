@@ -56,11 +56,11 @@ public class ChartGenerator
 
     private void addChart(String name, TimeSeriesCollection coll,
                           boolean showLegend, boolean showPoints,
-                          boolean logAxis)
+                          ChartType type)
     {
         JFreeChart chart = createTimeSeriesChart(name, "Time", name, coll,
                                                  showLegend, true, false,
-                                                 logAxis);
+                                                 type);
         chart.setBackgroundPaint(Color.white);
 
         if (showPoints) {
@@ -85,7 +85,7 @@ public class ChartGenerator
                                              String valueAxisLabel,
                                              XYDataset dataset, boolean legend,
                                              boolean tooltips, boolean urls,
-                                             boolean logAxis)
+                                             ChartType type)
     {
         ValueAxis timeAxis = new DateAxis(timeAxisLabel,
                                           TimeZone.getTimeZone("UTC"));
@@ -94,7 +94,7 @@ public class ChartGenerator
         timeAxis.setUpperMargin(0.02);
 
         ValueAxis valueAxis;
-        if (!logAxis) {
+        if (type != ChartType.LOGARITHMIC) {
             NumberAxis axis = new NumberAxis(valueAxisLabel);
             // override default
             axis.setAutoRangeIncludesZero(false);
@@ -275,11 +275,6 @@ public class ChartGenerator
     {
         final boolean multiSection = hasMultipleSections(compList, choices);
 
-        final boolean scale =
-            (choices.getType() == ChartType.SCALED);
-        final boolean logAxis =
-            (choices.getType() == ChartType.LOGARITHMIC);
-
         PlotArguments pargs = new PlotArguments(compList, false);
 
         title = pargs.getSectionTitle(compList);
@@ -305,7 +300,7 @@ public class ChartGenerator
                             chartName = name;
                         }
 
-                        if (scale) {
+                        if (choices.getType() == ChartType.SCALED) {
                             stat.plotScaled(coll, bean.getSectionKey(), name,
                                             pargs);
                         } else {
@@ -326,20 +321,25 @@ public class ChartGenerator
         }
 
         String chartName;
-        if (scale) {
+        switch (choices.getType()) {
+        case SCALED:
             chartName = "Scaled";
             title = "Scaled " + title;
-        } else if (logAxis) {
+            break;
+        case LOGARITHMIC:
             chartName = "Logarithmic";
             title = "Log " + title;
-        } else {
+            break;
+        default:
             chartName = "Combined";
             title = "Combined " + title;
+            break;
         }
 
-        boolean showLegend = !choices.hideLegends();
+        final boolean showLegend = !choices.hideLegends();
 
-        addChart(chartName, coll, showLegend, choices.showPoints(), logAxis);
+        addChart(chartName, coll, showLegend, choices.showPoints(),
+                 choices.getType());
     }
 
     private void showMultiple(List<ComponentData> compList, StatData statData,
@@ -401,7 +401,7 @@ public class ChartGenerator
                         chartName = pargs.getName(bean.getSectionKey(), name);
 
                         addChart(chartName, coll, showLegend,
-                                 choices.showPoints(), false);
+                                 choices.showPoints(), choices.getType());
                         numCharted++;
                     }
 
