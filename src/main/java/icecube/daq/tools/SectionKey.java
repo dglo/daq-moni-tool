@@ -20,7 +20,7 @@ public class SectionKey
         this.host = host;
         this.section = section;
 
-        final int minusIdx = host.indexOf('-');
+        final int minusIdx = host.lastIndexOf('-');
         if (minusIdx < 0) {
             comp = host;
             inst = 0;
