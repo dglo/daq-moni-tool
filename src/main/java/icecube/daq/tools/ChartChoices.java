@@ -6,7 +6,8 @@ public class ChartChoices
     public static final int SHOW_SELECTED = 2;
     public static final int SHOW_COMBINED = 3;
     public static final int SHOW_SCALED = 4;
-    public static final int SHOW_DELTA = 5;
+    public static final int SHOW_LOGARITHMIC = 5;
+    public static final int SHOW_DELTA = 6;
 
     private boolean filterBoring;
     private boolean hideLegends;
@@ -83,6 +84,9 @@ public class ChartChoices
             break;
         case SHOW_SCALED:
             showName = "show SCALED";
+            break;
+        case SHOW_LOGARITHMIC:
+            showName = "show LOGARITHMIC";
             break;
         case SHOW_DELTA:
             showName = "show DELTA";

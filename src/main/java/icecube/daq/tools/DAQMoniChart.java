@@ -613,7 +613,7 @@ public class DAQMoniChart
         group.add(showSelBtn);
         typeButtons.setShowSelected(showSelBtn);
 
-        JRadioButton deltaSelBtn = new JRadioButton("Delta selected");
+        JRadioButton deltaSelBtn = new JRadioButton("Delta");
         deltaSelBtn.setToolTipText("Graph changes to selected statistics" +
                                      " in separate graphs");
         deltaSelBtn.addActionListener(new ActionListener() {
@@ -625,7 +625,7 @@ public class DAQMoniChart
         panel.add(deltaSelBtn);
         group.add(deltaSelBtn);
 
-        JRadioButton combineSelBtn = new JRadioButton("Combine selected");
+        JRadioButton combineSelBtn = new JRadioButton("Combined");
         combineSelBtn.setToolTipText("Combine selected statistics in" +
                                      " a single graph");
         combineSelBtn.addActionListener(new ActionListener() {
@@ -637,7 +637,7 @@ public class DAQMoniChart
         panel.add(combineSelBtn);
         group.add(combineSelBtn);
 
-        JRadioButton scaleSelBtn = new JRadioButton("Combine scaled");
+        JRadioButton scaleSelBtn = new JRadioButton("Scaled");
         scaleSelBtn.setToolTipText("Combine selected statistics in" +
                                      " a single scaled graph");
         scaleSelBtn.addActionListener(new ActionListener() {
@@ -648,6 +648,18 @@ public class DAQMoniChart
             });
         panel.add(scaleSelBtn);
         group.add(scaleSelBtn);
+
+        JRadioButton scaleLogBtn = new JRadioButton("Logarithmic");
+        scaleLogBtn.setToolTipText("Combine selected statistics in" +
+                                     " a single logarithmic graph");
+        scaleLogBtn.addActionListener(new ActionListener() {
+                public void actionPerformed(ActionEvent evt)
+                {
+                    chartChoices.setType(ChartChoices.SHOW_LOGARITHMIC);
+                }
+            });
+        panel.add(scaleLogBtn);
+        group.add(scaleLogBtn);
 
         showAllBtn.setSelected(true);
         chartChoices.setType(ChartChoices.SHOW_ALL);

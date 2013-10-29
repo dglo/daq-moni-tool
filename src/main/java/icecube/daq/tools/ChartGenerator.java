@@ -16,6 +16,7 @@ import javax.swing.JPanel;
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
+import org.jfree.chart.axis.LogarithmicAxis;
 import org.jfree.chart.axis.NumberAxis;
 import org.jfree.chart.axis.ValueAxis;
 import org.jfree.chart.labels.StandardXYToolTipGenerator;
@@ -44,7 +45,8 @@ public class ChartGenerator
         {
             showMultiple(compList, statData, choices);
         } else if (choices.getType() == ChartChoices.SHOW_COMBINED ||
-                   choices.getType() == ChartChoices.SHOW_SCALED)
+                   choices.getType() == ChartChoices.SHOW_SCALED ||
+                   choices.getType() == ChartChoices.SHOW_LOGARITHMIC)
         {
             showCombined(compList, statData, choices);
         } else {
@@ -53,10 +55,12 @@ public class ChartGenerator
     }
 
     private void addChart(String name, TimeSeriesCollection coll,
-                          boolean showLegend, boolean showPoints)
+                          boolean showLegend, boolean showPoints,
+                          boolean logAxis)
     {
         JFreeChart chart = createTimeSeriesChart(name, "Time", name, coll,
-                                                 showLegend, true, false);
+                                                 showLegend, true, false,
+                                                 logAxis);
         chart.setBackgroundPaint(Color.white);
 
         if (showPoints) {
@@ -80,7 +84,8 @@ public class ChartGenerator
     private JFreeChart createTimeSeriesChart(String title, String timeAxisLabel,
                                              String valueAxisLabel,
                                              XYDataset dataset, boolean legend,
-                                             boolean tooltips, boolean urls)
+                                             boolean tooltips, boolean urls,
+                                             boolean logAxis)
     {
         ValueAxis timeAxis = new DateAxis(timeAxisLabel,
                                           TimeZone.getTimeZone("UTC"));
@@ -88,9 +93,18 @@ public class ChartGenerator
         timeAxis.setLowerMargin(0.02);
         timeAxis.setUpperMargin(0.02);
 
-        NumberAxis valueAxis = new NumberAxis(valueAxisLabel);
-        // override default
-        valueAxis.setAutoRangeIncludesZero(false);
+        ValueAxis valueAxis;
+        if (!logAxis) {
+            NumberAxis axis = new NumberAxis(valueAxisLabel);
+            // override default
+            axis.setAutoRangeIncludesZero(false);
+            valueAxis = axis;
+        } else {
+            LogarithmicAxis axis = new LogarithmicAxis(valueAxisLabel);
+            //axis.setMinorTickMarksVisible(true);
+            axis.setAutoRange(true);
+            valueAxis = axis;
+        }
 
         XYPlot plot = new XYPlot(dataset, timeAxis, valueAxis, null);
 
@@ -263,6 +277,8 @@ public class ChartGenerator
 
         final boolean scale =
             (choices.getType() == ChartChoices.SHOW_SCALED);
+        final boolean logAxis =
+            (choices.getType() == ChartChoices.SHOW_LOGARITHMIC);
 
         PlotArguments pargs = new PlotArguments(compList, false);
 
@@ -311,16 +327,19 @@ public class ChartGenerator
 
         String chartName;
         if (scale) {
-            chartName = "Scaled Data";
+            chartName = "Scaled";
             title = "Scaled " + title;
+        } else if (logAxis) {
+            chartName = "Logarithmic";
+            title = "Log " + title;
         } else {
-            chartName = "Combined Data";
+            chartName = "Combined";
             title = "Combined " + title;
         }
 
         boolean showLegend = !choices.hideLegends();
 
-        addChart(chartName, coll, showLegend, choices.showPoints());
+        addChart(chartName, coll, showLegend, choices.showPoints(), logAxis);
     }
 
     private void showMultiple(List<ComponentData> compList, StatData statData,
@@ -382,7 +401,7 @@ public class ChartGenerator
                         chartName = pargs.getName(bean.getSectionKey(), name);
 
                         addChart(chartName, coll, showLegend,
-                                 choices.showPoints());
+                                 choices.showPoints(), false);
                         numCharted++;
                     }
 
