@@ -16,7 +16,7 @@ Extracting data
 ---------------
 After the software is built, you need some data to view.  The easiest way to
 get the data for a run is to bring up the run's I3Live page in your browser
-then find the "download complete tarball" link (just above the "pDAQ Details"
+then find the "download complete tarball" link (within the "pDAQ Details"
 section) and save the tarball file to your local machine.
 
 The pDAQ monitoring data is buried a couple of layers inside the downloaded
@@ -27,6 +27,8 @@ directory will unpack the file and remove the extra stuff:
 
 This will leave you with a `daqrun121212` subdirectory.
 
+You can also cut out the middle man and grab recent log/moni files from
+expcont:/mnt/data/pdaq/log on the South Pole System.
 
 Running `chart`
 ---------------
