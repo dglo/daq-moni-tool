@@ -9,7 +9,7 @@
   <modelVersion>4.0.0</modelVersion>
   <artifactId>daq-moni-tool</artifactId>
   <packaging>jar</packaging>
-  <name>daq-moni-tool</name>
+  <name>Monitoring tools</name>
   <description>The ${project.name} sub-system of the Surface Data Acquisition system for the IceCube Project.</description>
 
   <scm>
