@@ -827,7 +827,7 @@ class StrandData
 
     public String getDataString()
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < depths.length; i++) {
             if (i > 0) {
                 buf.append(' ');
@@ -1359,7 +1359,7 @@ class TimingData
 
     public String getDataString()
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         for (TimingPiece piece : list) {
             if (buf.length() > 0) {
@@ -1651,7 +1651,7 @@ class DoubleListData
 
     public String getDataString()
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < vals.length; i++) {
             if (i > 0) {
                 buf.append(' ');
@@ -1697,7 +1697,7 @@ class LongListData
 
     public String getDataString()
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < vals.length; i++) {
             if (i > 0) {
                 buf.append(' ');
@@ -1755,7 +1755,7 @@ class StringListData
 
     public String getDataString()
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
         for (int i = 0; i < vals.length; i++) {
             if (i > 0) {
                 buf.append(' ');
@@ -2632,7 +2632,7 @@ public class StatData
 
     public String toString()
     {
-        StringBuffer buf = new StringBuffer("StatData[");
+        StringBuilder buf = new StringBuilder("StatData[");
 
         boolean needComma = false;
         for (SectionKey key : sectionMap.keySet()) {

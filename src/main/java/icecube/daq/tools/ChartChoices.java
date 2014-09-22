@@ -59,7 +59,7 @@ public class ChartChoices
 
     public String toString()
     {
-        StringBuffer buf = new StringBuffer("ChartChoices[");
+        StringBuilder buf = new StringBuilder("ChartChoices[");
         buf.append(filterBoring ? "" : "!").append("filterBoring ");
         buf.append(hideLegends ? "" : "!").append("hideLegends ");
         buf.append(showPoints ? "" : "!").append("showPoints ");

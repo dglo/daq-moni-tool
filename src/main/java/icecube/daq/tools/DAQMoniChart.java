@@ -921,7 +921,7 @@ public class DAQMoniChart
 
     private void popupAlert(String[] msgLines)
     {
-        StringBuffer buf = new StringBuffer();
+        StringBuilder buf = new StringBuilder();
 
         for (int i = 0; i < msgLines.length; i++) {
             if (i > 0) {
