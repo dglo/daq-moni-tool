@@ -331,8 +331,8 @@ class DoubleStat
         TimeSeries series = new TimeSeries(seriesName, Second.class);
         coll.addSeries(series);
 
-        double minVal = Double.MAX_VALUE;
-        double maxVal = Double.MIN_VALUE;
+        double minVal = Double.POSITIVE_INFINITY;
+        double maxVal = Double.NEGATIVE_INFINITY;
 
         for (BaseData bd : iterator()) {
             DoubleData data = (DoubleData) bd;
@@ -1199,8 +1199,8 @@ class TriggerStat
 
         long minVal = Long.MAX_VALUE;
         long maxVal = Long.MIN_VALUE;
-        double minDbl = Double.MIN_VALUE;
-        double maxDbl = Double.MAX_VALUE;
+        double minDbl = Double.NEGATIVE_INFINITY;
+        double maxDbl = Double.POSITIVE_INFINITY;
 
         for (BaseData bd : iterator()) {
             TriggerData data = (TriggerData) bd;
@@ -1488,8 +1488,8 @@ class TimingStat
         double[] minVal = new double[series.length];
         double[] maxVal = new double[series.length];
         for (int i = 0; i < series.length; i++) {
-            minVal[i] = Double.MAX_VALUE;
-            maxVal[i] = Double.MIN_VALUE;
+            minVal[i] = Double.POSITIVE_INFINITY;
+            maxVal[i] = Double.NEGATIVE_INFINITY;
         }
 
         for (int i = 0; i < series.length; i++) {
@@ -1888,8 +1888,8 @@ class ListStat
             coll.addSeries(series[i]);
         }
 
-        double minVal = Double.MAX_VALUE;
-        double maxVal = Double.MIN_VALUE;
+        double minVal = Double.POSITIVE_INFINITY;
+        double maxVal = Double.NEGATIVE_INFINITY;
 
         for (BaseData bd : iterator()) {
             ListData data = (ListData) bd;
