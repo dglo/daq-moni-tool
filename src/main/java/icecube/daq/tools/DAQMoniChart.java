@@ -758,7 +758,8 @@ public class DAQMoniChart
     {
         ArrayList<ComponentData> list = new ArrayList<ComponentData>();
 
-        HashMap<String, ComponentData> map = new HashMap<String, ComponentData>();
+        HashMap<String, ComponentData> map =
+            new HashMap<String, ComponentData>();
 
         for (SectionKey key : statData.getSections()) {
             List<String> names = statData.getSectionNames(key);
