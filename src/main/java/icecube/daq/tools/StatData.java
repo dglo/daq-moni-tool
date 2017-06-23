@@ -2582,14 +2582,15 @@ public class StatData
             parent.add(datum);
         } catch (ClassCastException cce) {
             if (isCreated || !parent.isEmpty()) {
-                throw new RuntimeException("Cannot add " + key + ":" +
-                                           name + " datum " + datum, cce);
+                System.err.println("Cannot add " + key + ":" + name +
+                                   " datum " + datum + ": " +
+                                   cce.getMessage());
+            } else {
+                parent = datum.getParent();
+                parent.add(datum);
+
+                statMap.put(name, parent);
             }
-
-            parent = datum.getParent();
-            parent.add(datum);
-
-            statMap.put(name, parent);
         } catch (Error err) {
             System.err.println("Cannot add " + key + ":" + name +
                                " datum " + datum + ": " +  err.getMessage());
