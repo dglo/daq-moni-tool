@@ -192,6 +192,49 @@ class ComponentData
         return inst;
     }
 
+    public static ArrayList<ComponentData> extract(StatData statData)
+    {
+        ArrayList<ComponentData> list = new ArrayList<ComponentData>();
+
+        HashMap<String, ComponentData> map =
+            new HashMap<String, ComponentData>();
+
+        for (SectionKey key : statData.getSections()) {
+            List<String> names = statData.getSectionNames(key);
+            if (names.size() <= 0) {
+                continue;
+            }
+
+            String compName = key.getComponent();
+            int instNum = key.getInstance();
+            String beanName = key.getSection();
+
+            ComponentData compData = (ComponentData) map.get(compName);
+            if (compData == null) {
+                compData = new ComponentData(compName);
+                map.put(compName, compData);
+                list.add(compData);
+            }
+
+            ComponentInstance compInst = compData.get(instNum);
+            if (compInst == null) {
+                compInst = compData.create(instNum);
+            }
+
+            InstanceBean beanData = compInst.get(beanName);
+            if (beanData != null) {
+                System.err.println("Found multiple instances of component \"" +
+                                   compName + "\" instance " + instNum +
+                                   " bean \"" + beanName + "\"");
+                continue;
+            }
+
+            compInst.create(beanName, names, key);
+        }
+
+        return list;
+    }
+
     ComponentInstance get(int instNum)
     {
         for (ComponentInstance ci : list) {
@@ -497,7 +540,7 @@ public class DAQMoniChart
         setTitle("Monitoring Charts");
         setLayout(new BorderLayout());
 
-        ArrayList<ComponentData> compList = extractComponentData(statData);
+        ArrayList<ComponentData> compList = ComponentData.extract(statData);
 
         add(buildBottom(), BorderLayout.CENTER);
         add(buildCommands(compList, statData), BorderLayout.PAGE_END);
@@ -756,49 +799,6 @@ public class DAQMoniChart
         panel.add(drawGraphs);
 
         return panel;
-    }
-
-    private ArrayList<ComponentData> extractComponentData(StatData statData)
-    {
-        ArrayList<ComponentData> list = new ArrayList<ComponentData>();
-
-        HashMap<String, ComponentData> map =
-            new HashMap<String, ComponentData>();
-
-        for (SectionKey key : statData.getSections()) {
-            List<String> names = statData.getSectionNames(key);
-            if (names.size() <= 0) {
-                continue;
-            }
-
-            String compName = key.getComponent();
-            int instNum = key.getInstance();
-            String beanName = key.getSection();
-
-            ComponentData compData = (ComponentData) map.get(compName);
-            if (compData == null) {
-                compData = new ComponentData(compName);
-                map.put(compName, compData);
-                list.add(compData);
-            }
-
-            ComponentInstance compInst = compData.get(instNum);
-            if (compInst == null) {
-                compInst = compData.create(instNum);
-            }
-
-            InstanceBean beanData = compInst.get(beanName);
-            if (beanData != null) {
-                System.err.println("Found multiple instances of component \"" +
-                                   compName + "\" instance " + instNum +
-                                   " bean \"" + beanName + "\"");
-                continue;
-            }
-
-            compInst.create(beanName, names, key);
-        }
-
-        return list;
     }
 
     private void fillTemplatePanel(JTabbedPane topPane, JTabbedPane pane)
