@@ -86,9 +86,12 @@ def chart(args):
                 break
 
     app = "icecube.daq.tools.DAQMoniChart"
-    daqProjects = ["daq-moni-tool"]
-    mavenDeps = [("org/jfree", "jcommon", "1.0.23"),
-                 ("org/jfree", "jfreechart", "1.0.19")]
+    daqProjects = ["daq-common", "daq-moni-tool"]
+    mavenDeps = [
+        ("org/jfree", "jcommon", "1.0.23"),
+        ("org/jfree", "jfreechart", "1.0.19"),
+        ("log4j", "log4j", "1.0.19"),
+    ]
 
     runJava(app, ["-mx4000m"], appArgs, daqProjects, mavenDeps)
 
