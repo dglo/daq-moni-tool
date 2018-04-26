@@ -190,8 +190,8 @@ public class ChartGenerator
             boolean foundOne = false;
 
             for (ComponentData cd : compList) {
-                for (ComponentInstance ci : cd.iterator()) {
-                    for (InstanceBean bean : ci.iterator()) {
+                for (ComponentInstance ci : cd) {
+                    for (InstanceBean bean : ci) {
                         if (bean.hasGraphs()) {
                             if (foundOne) {
                                 // if we've found two sections with graphs,
@@ -283,8 +283,8 @@ public class ChartGenerator
         coll.setDomainIsPointsInTime(true);
 
         for (ComponentData cd : compList) {
-            for (ComponentInstance ci : cd.iterator()) {
-                for (InstanceBean bean : ci.iterator()) {
+            for (ComponentInstance ci : cd) {
+                for (InstanceBean bean : ci) {
                     if (!bean.hasGraphs()) {
                         continue;
                     }
@@ -292,7 +292,7 @@ public class ChartGenerator
                     int numCharted = 0;
                     String chartName = null;
 
-                    for (String name : bean.graphIterator()) {
+                    for (String name : bean.graphIterable()) {
                         StatParent stat =
                             statData.getStatistics(bean.getSectionKey(), name);
 
@@ -356,8 +356,8 @@ public class ChartGenerator
         title = pargs.getSectionTitle(compList);
 
         for (ComponentData cd : compList) {
-            for (ComponentInstance ci : cd.iterator()) {
-                for (InstanceBean bean : ci.iterator()) {
+            for (ComponentInstance ci : cd) {
+                for (InstanceBean bean : ci) {
                     if (!bean.hasGraphs()) {
                         continue;
                     }
@@ -367,9 +367,9 @@ public class ChartGenerator
 
                     Iterable<String> iter;
                     if (showAll || bean.isIncludeAll()) {
-                        iter = bean.iterator();
+                        iter = bean;
                     } else {
-                        iter = bean.graphIterator();
+                        iter = bean.graphIterable();
                     }
                     for (String name : iter) {
                         StatParent stat =

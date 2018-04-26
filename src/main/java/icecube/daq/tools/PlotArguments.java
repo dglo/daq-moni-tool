@@ -21,8 +21,8 @@ public class PlotArguments
         String prevName = null;
 
         for (ComponentData cd : compList) {
-            for (ComponentInstance ci : cd.iterator()) {
-                for (InstanceBean bean : ci.iterator()) {
+            for (ComponentInstance ci : cd) {
+                for (InstanceBean bean : ci) {
                     if (!bean.hasGraphs()) {
                         continue;
                     }
@@ -40,7 +40,7 @@ public class PlotArguments
                     }
 
                     if (sameName) {
-                        for (String name : bean.graphIterator()) {
+                        for (String name : bean.graphIterable()) {
                             if (prevName == null) {
                                 prevName = name;
                             } else if (!prevName.equals(name)) {
@@ -135,10 +135,10 @@ public class PlotArguments
         String prevName = null;
 
         for (ComponentData cd : compList) {
-            for (ComponentInstance ci : cd.iterator()) {
+            for (ComponentInstance ci : cd) {
 
                 boolean addedHost = false;
-                for (InstanceBean bean : ci.iterator()) {
+                for (InstanceBean bean : ci) {
                     if (bean.hasGraphs()) {
                         if (!addedHost && (forceHost || sameHost)) {
                             if (secTitle.length() > 0) {
@@ -177,7 +177,7 @@ public class PlotArguments
                         }
 
                         if (sameName) {
-                            for (String name : bean.graphIterator()) {
+                            for (String name : bean.graphIterable()) {
                                 if (prevName == null ||
                                     !name.equals(prevName))
                                 {

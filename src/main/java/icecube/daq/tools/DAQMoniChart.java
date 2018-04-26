@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -27,6 +28,7 @@ import javax.swing.JTabbedPane;
 import org.jfree.ui.RefineryUtilities;
 
 class InstanceBean
+    implements Iterable<String>
 {
     private String name;
     private List<String> itemNames;
@@ -65,7 +67,7 @@ class InstanceBean
         return key;
     }
 
-    Iterable<String> graphIterator()
+    Iterable<String> graphIterable()
     {
         if (includeAll) {
             return itemNames;
@@ -89,9 +91,9 @@ class InstanceBean
         return includeAll || (graphNames != null && graphNames.contains(name));
     }
 
-    Iterable<String> iterator()
+    public Iterator<String> iterator()
     {
-        return itemNames;
+        return itemNames.iterator();
     }
 
     boolean matches(String name)
@@ -126,6 +128,7 @@ class InstanceBean
 }
 
 class ComponentInstance
+    implements Iterable<InstanceBean>
 {
     private int num;
     private ArrayList<InstanceBean> list;
@@ -159,9 +162,9 @@ class ComponentInstance
         return num;
     }
 
-    Iterable<InstanceBean> iterator()
+    public Iterator<InstanceBean> iterator()
     {
-        return list;
+        return list.iterator();
     }
 
     boolean matches(int num)
@@ -171,6 +174,7 @@ class ComponentInstance
 }
 
 class ComponentData
+    implements Iterable<ComponentInstance>
 {
     private String name;
     private ArrayList<ComponentInstance> list;
@@ -218,9 +222,9 @@ class ComponentData
         return list.size() == 1;
     }
 
-    Iterable<ComponentInstance> iterator()
+    public Iterator<ComponentInstance> iterator()
     {
-        return list;
+        return list.iterator();
     }
 
     boolean matches(String name)
@@ -506,7 +510,7 @@ public class DAQMoniChart
 
     private void addBeanPanel(JTabbedPane pane, ComponentInstance compInst)
     {
-        for (InstanceBean instBean : compInst.iterator()) {
+        for (InstanceBean instBean : compInst) {
             final int cols = 3;
             final int rows = (instBean.size() + cols - 1) / cols;
 
@@ -523,7 +527,7 @@ public class DAQMoniChart
             JPanel gridPanel = new JPanel();
             gridPanel.setLayout(new GridLayout(rows, cols));
 
-            for (String name : instBean.iterator()) {
+            for (String name : instBean) {
                 JCheckBox ckbox =
                     new NameCheckBox(name, chartChoices, instBean, typeButtons,
                                      includeAll);
@@ -900,7 +904,7 @@ public class DAQMoniChart
                 JTabbedPane allPane = new JTabbedPane();
                 compPane.addTab(TEMPLATE_TITLE, allPane);
 
-                for (ComponentInstance compInst : compData.iterator()) {
+                for (ComponentInstance compInst : compData) {
                     JTabbedPane instPane = new JTabbedPane();
                     compPane.addTab(Integer.toString(compInst.getNumber()),
                                       instPane);
