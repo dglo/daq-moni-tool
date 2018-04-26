@@ -1,5 +1,7 @@
 package icecube.daq.tools;
 
+import icecube.daq.common.ColoredAppender;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.FlowLayout;
@@ -24,6 +26,10 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JTabbedPane;
+
+import org.apache.log4j.BasicConfigurator;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 
 import org.jfree.ui.RefineryUtilities;
 
@@ -882,6 +888,9 @@ public class DAQMoniChart
 
     public static void main(String[] args)
     {
+        BasicConfigurator.resetConfiguration();
+        BasicConfigurator.configure(new ColoredAppender());
+
         boolean omitDataCollector = false;
         boolean verbose = false;
         List<File> fileList = new ArrayList<File>();
