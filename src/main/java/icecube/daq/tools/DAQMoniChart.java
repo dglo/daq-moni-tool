@@ -473,74 +473,13 @@ public class DAQMoniChart
 
     private ChartChoices chartChoices = new ChartChoices();
 
-    private StatData statData;
-
     private TypeButtons typeButtons = new TypeButtons();
     private JTabbedPane tabbedPane = new JTabbedPane();
 
-    public DAQMoniChart(String[] args)
+    public DAQMoniChart(ArrayList<ComponentData> compList, StatData statData)
     {
-        boolean omitDataCollector = false;
-        boolean usage = false;
-        for (int i = 0; i < args.length; i++) {
-            if (args[i].length() == 0) {
-                System.err.println("Ignoring empty argument");
-                continue;
-            }
-
-            if (args[i].charAt(0) != '-') {
-                // add statistics from file
-                File f = new File(args[i]);
-                if (!f.exists()) {
-                    System.err.println("No such file \"" + f + "\"");
-                    continue;
-                }
-
-                if (statData == null) {
-                    statData = new StatData();
-                }
-
-                addSource(statData, f, omitDataCollector);
-                continue;
-            }
-
-            boolean badArg = false;
-            if (args[i].length() == 1) {
-                badArg = true;
-            } else {
-                switch (args[i].charAt(1)) {
-                case 'o':
-                    omitDataCollector = true;
-                    break;
-                default:
-                    badArg = true;
-                    break;
-                }
-            }
-
-            if (badArg) {
-                System.err.format("Bad argument '%s'\n", args[i]);
-                usage = true;
-            }
-        }
-
-        if (statData == null) {
-            System.err.println("No data files found!");
-            usage = true;
-        }
-
-        if (usage) {
-            final String msg =
-                String.format("Usage: %s [-o(mitDataCollector)]" +
-                              " file.moni [file.moni ...]",
-                              getClass().getName());
-            throw new Error(msg);
-        }
-
         setTitle("Monitoring Charts");
         setLayout(new BorderLayout());
-
-        ArrayList<ComponentData> compList = ComponentData.extract(statData);
 
         add(buildBottom(), BorderLayout.CENTER);
         add(buildCommands(compList, statData), BorderLayout.PAGE_END);
@@ -941,6 +880,70 @@ public class DAQMoniChart
 
     public static void main(String[] args)
     {
-        new DAQMoniChart(args);
+        boolean omitDataCollector = false;
+        List<File> fileList = new ArrayList<File>();
+
+        boolean usage = false;
+        for (int i = 0; i < args.length; i++) {
+            if (args[i].length() == 0) {
+                System.err.println("Ignoring empty argument");
+                continue;
+            }
+
+            if (args[i].charAt(0) == '-') {
+                boolean badArg = false;
+                if (args[i].length() == 1) {
+                    badArg = true;
+                } else {
+                    switch (args[i].charAt(1)) {
+                    case 'o':
+                        omitDataCollector = true;
+                        break;
+                    default:
+                        badArg = true;
+                        break;
+                    }
+                }
+
+                if (badArg) {
+                    System.err.format("Bad argument '%s'\n", args[i]);
+                    usage = true;
+                    break;
+                }
+
+                continue;
+            }
+
+            // add statistics from file
+            File f = new File(args[i]);
+            if (!f.exists()) {
+                System.err.println("No such file \"" + f + "\"");
+            } else {
+                fileList.add(f);
+            }
+        }
+
+        if (fileList.size() == 0) {
+            System.err.println("No data files found!");
+            usage = true;
+        }
+
+
+        if (usage) {
+            final String msg =
+                String.format("Usage: %s [-o(mitDataCollector)]" +
+                              " file.moni [file.moni ...]",
+                              DAQMoniChart.class.getName());
+            throw new Error(msg);
+        }
+
+        StatData statData = new StatData();
+        for (File file : fileList) {
+            addSource(statData, file, omitDataCollector);
+        }
+
+        ArrayList<ComponentData> compList = ComponentData.extract(statData);
+
+        new DAQMoniChart(compList, statData);
     }
 }
