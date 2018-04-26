@@ -525,18 +525,20 @@ public class DAQMoniChart
     }
 
     private static final void addSource(StatData statData, File f,
-                                        boolean omitDataCollector)
+                                        boolean omitDataCollector,
+                                        boolean verbose)
     {
         if (f.isDirectory()) {
             File[] list = f.listFiles();
             for (int i = 0; i < list.length; i++) {
-                addSource(statData, list[i], omitDataCollector);
+                addSource(statData, list[i], omitDataCollector, verbose);
             }
         } else {
             System.out.println(f + ":");
 
             try {
-                statData.addData(new GraphSource(f), omitDataCollector);
+                statData.addData(new GraphSource(f), omitDataCollector,
+                                 verbose);
             } catch (IOException ioe) {
                 System.err.println("Couldn't load \"" + f + "\":");
                 ioe.printStackTrace();
@@ -881,6 +883,7 @@ public class DAQMoniChart
     public static void main(String[] args)
     {
         boolean omitDataCollector = false;
+        boolean verbose = false;
         List<File> fileList = new ArrayList<File>();
 
         boolean usage = false;
@@ -899,6 +902,9 @@ public class DAQMoniChart
                     case 'o':
                         omitDataCollector = true;
                         break;
+                    case 'v':
+                        verbose = true;
+                        break;
                     default:
                         badArg = true;
                         break;
@@ -908,7 +914,6 @@ public class DAQMoniChart
                 if (badArg) {
                     System.err.format("Bad argument '%s'\n", args[i]);
                     usage = true;
-                    break;
                 }
 
                 continue;
@@ -928,7 +933,6 @@ public class DAQMoniChart
             usage = true;
         }
 
-
         if (usage) {
             final String msg =
                 String.format("Usage: %s [-o(mitDataCollector)]" +
@@ -939,7 +943,7 @@ public class DAQMoniChart
 
         StatData statData = new StatData();
         for (File file : fileList) {
-            addSource(statData, file, omitDataCollector);
+            addSource(statData, file, omitDataCollector, verbose);
         }
 
         ArrayList<ComponentData> compList = ComponentData.extract(statData);

@@ -40,6 +40,9 @@ from RunJava import runJava
 PDAQ_LOG_DIR = "/mnt/data/pdaq/log/"
 
 def add_arguments(parser):
+    parser.add_argument("-v", "--verbose", dest="verbose",
+                        action="store_true", default=False,
+                        help="Print extra information")
     parser.add_argument(dest="fileList", nargs="+")
 
 
@@ -54,10 +57,15 @@ def add_moni(path, moniList):
             if entry.endswith(".moni"):
                 moniList.append(os.path.join(path, entry))
                 found = True
+
     return found
 
 def chart(args):
-    moniList = []
+    appArgs = []
+
+    if args.verbose:
+        appArgs.append("-v")
+
     for f in args.fileList:
         for i in xrange(100):
             path = None
@@ -73,7 +81,7 @@ def chart(args):
                 raise SystemExit("Bad pDAQ log directory '%s'" % f)
 
             if os.path.exists(path):
-                if not add_moni(path, moniList):
+                if not add_moni(path, appArgs):
                     print >>sys.stderr, "No moni files found in '%s'" % path
                 break
 
@@ -82,7 +90,7 @@ def chart(args):
     mavenDeps = [("org/jfree", "jcommon", "1.0.23"),
                  ("org/jfree", "jfreechart", "1.0.19")]
 
-    runJava(app, ["-mx4000m"], moniList, daqProjects, mavenDeps)
+    runJava(app, ["-mx4000m"], appArgs, daqProjects, mavenDeps)
 
 
 if __name__ == "__main__":
