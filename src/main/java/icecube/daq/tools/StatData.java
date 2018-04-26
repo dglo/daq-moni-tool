@@ -518,7 +518,7 @@ class MemoryStat
                                           SectionKey key, String name,
                                           PlotArguments pargs)
     {
-        final String prefix = key + " " + name + " ";
+        final String prefix = pargs.getPrefix(key, name);
 
         TimeSeries usedSeries = new TimeSeries(prefix + "Used", Second.class);
         coll.addSeries(usedSeries);
@@ -570,7 +570,7 @@ class MemoryStat
                                            SectionKey key, String name,
                                            PlotArguments pargs)
     {
-        final String prefix = key + " " + name + " ";
+        final String prefix = pargs.getPrefix(key, name);
 
         TimeSeries usedSeries = new TimeSeries(prefix + "Used", Second.class);
         coll.addSeries(usedSeries);
@@ -915,7 +915,7 @@ class StrandStat
                                           SectionKey key, String name,
                                           PlotArguments pargs)
     {
-        final String prefix = key + " " + name + " ";
+        final String prefix = pargs.getPrefix(key, name);
 
         TimeSeries[] series = new TimeSeries[numStrands];
         for (int i = 0; i < series.length; i++) {
@@ -950,7 +950,7 @@ class StrandStat
                                            SectionKey key, String name,
                                            PlotArguments pargs)
     {
-        final String prefix = key + " " + name + " ";
+        final String prefix = pargs.getPrefix(key, name);
 
         TimeSeries[] series = new TimeSeries[numStrands];
         for (int i = 0; i < series.length; i++) {
@@ -1475,7 +1475,7 @@ class TimingStat
                                            SectionKey key, String name,
                                            PlotArguments pargs)
     {
-        final String prefix = key + " " + name + " ";
+        final String prefix = pargs.getPrefix(key, name);
 
         TimeSeries[] series = new TimeSeries[titles.size()];
         for (int i = 0; i < series.length; i++) {
@@ -1845,7 +1845,7 @@ class ListStat
                                           SectionKey key, String name,
                                           PlotArguments pargs)
     {
-        final String prefix = key + " " + name + " ";
+        final String prefix = pargs.getPrefix(key, name);
 
         TimeSeries[] series = new TimeSeries[numEntries];
         for (int i = 0; i < series.length; i++) {
@@ -1880,7 +1880,7 @@ class ListStat
                                            SectionKey key, String name,
                                            PlotArguments pargs)
     {
-        final String prefix = key + " " + name + " ";
+        final String prefix = pargs.getPrefix(key, name);
 
         TimeSeries[] series = new TimeSeries[numEntries];
         for (int i = 0; i < series.length; i++) {
@@ -2552,14 +2552,6 @@ public class StatData
 
     public void add(String host, String section, String name, BaseData datum)
     {
-/*
-        String key;
-        if (host == null) {
-            key = section;
-        } else {
-            key = host + ":" + section;
-        }
-*/
         SectionKey key = new SectionKey(host, section);
 
         if (!sectionMap.containsKey(key)) {
