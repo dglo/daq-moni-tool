@@ -483,7 +483,7 @@ class MemoryStat
         TimeSeries usedSeries = new TimeSeries(prefix + "Used", Second.class);
         coll.addSeries(usedSeries);
 
-        TimeSeries freeSeries = new TimeSeries(prefix + "Total", Second.class);
+        TimeSeries freeSeries = new TimeSeries(prefix + "Free", Second.class);
         coll.addSeries(freeSeries);
 
         for (BaseData bd : iterator()) {
@@ -504,7 +504,7 @@ class MemoryStat
                                data.getFreeMemory());
             } catch (Exception ex) {
                 System.err.println("Series \"" + prefix +
-                                   " Total\" already contains data at " +
+                                   " Free\" already contains data at " +
                                    data.getTime().getSecond() +
                                    ", cannot add value " +
                                    data.getFreeMemory());
@@ -575,7 +575,7 @@ class MemoryStat
         TimeSeries usedSeries = new TimeSeries(prefix + "Used", Second.class);
         coll.addSeries(usedSeries);
 
-        TimeSeries freeSeries = new TimeSeries(prefix + "Total", Second.class);
+        TimeSeries freeSeries = new TimeSeries(prefix + "Free", Second.class);
         coll.addSeries(freeSeries);
 
         long minVal = Long.MAX_VALUE;
