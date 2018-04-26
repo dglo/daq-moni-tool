@@ -2492,7 +2492,8 @@ public class StatData
     {
     }
 
-    public void addData(GraphSource inputSrc, boolean omitDataCollector)
+    public void addData(GraphSource inputSrc, boolean omitDataCollector,
+                        boolean verbose)
         throws IOException
     {
         if (inputSrc == null) {

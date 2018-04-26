@@ -17,7 +17,7 @@ public class DumpMoni
 
         for (File f : fileList) {
             try {
-                statData.addData(new GraphSource(f), false);
+                statData.addData(new GraphSource(f), false, false);
             } catch (IOException ioe) {
                 System.err.println("Couldn't load \"" + f + "\":");
                 ioe.printStackTrace();
