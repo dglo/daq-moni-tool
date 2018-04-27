@@ -3,6 +3,8 @@ package icecube.daq.tools;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -43,6 +45,8 @@ class DoubleData
 class DoubleStat
     extends StatParent
 {
+    private static final Logger LOG = Logger.getLogger(DoubleStat.class);
+
     private static final Pattern STAT_PAT =
         Pattern.compile(
             "^(\\s+([^\\s:]+):?|\\s*(.+)\\s*:)\\s+([\\-\\+]?\\d+\\.?\\d*)\\s*$");
@@ -70,7 +74,7 @@ class DoubleStat
             try {
                 seconds = data.getTime().getSecond();
             } catch (Exception exc) {
-                System.err.println("Cannot extract seconds from " + data);
+                LOG.error("Cannot extract seconds from " + data);
                 continue;
             }
 
@@ -83,16 +87,15 @@ class DoubleStat
                 try {
                     oldVal = (double) series.getDataItem(seconds).getValue();
                 } catch (Exception ex2) {
-                    System.err.println("Cannot get previous value from" +
-                                       " series \"" + seriesName + "\"");
+                    LOG.error("Cannot get previous value from" + " series \"" +
+                              seriesName + "\"");
                     continue;
                 }
 
                 if (Math.abs(val - oldVal) > 0.2) {
-                    System.err.println("Series \"" + seriesName +
-                                       "\" already contains " + oldVal +
-                                       " at " + seconds +
-                                       ", cannot add value " + val);
+                    LOG.error("Series \"" + seriesName +
+                              "\" already contains " + oldVal + " at " +
+                              seconds + ", cannot add value " + val);
                     continue;
                 }
             }
@@ -123,7 +126,7 @@ class DoubleStat
                 try {
                     seconds = data.getTime().getSecond();
                 } catch (Exception exc) {
-                    System.err.println("Cannot extract seconds from " + data);
+                    LOG.error("Cannot extract seconds from " + data);
                     continue;
                 }
 
@@ -131,7 +134,7 @@ class DoubleStat
                 try {
                     deltaVal = data.getValue() - prevVal;
                 } catch (Exception exc) {
-                    System.err.println("Cannot compute delta for " + data);
+                    LOG.error("Cannot compute delta for " + data);
                     continue;
                 }
 
@@ -142,17 +145,16 @@ class DoubleStat
                     try {
                         oldVal = (long) series.getDataItem(seconds).getValue();
                     } catch (Exception ex2) {
-                        System.err.println("Cannot get previous value from" +
-                                           " series \"" + seriesName + "\"");
+                        LOG.error("Cannot get previous value from series \"" +
+                                  seriesName + "\"");
                         continue;
                     }
 
                     if (Math.abs(deltaVal - oldVal) > 0.2) {
-                        System.err.println("Series \"" + seriesName +
-                                           "\" already contains " + oldVal +
-                                           " at " + seconds +
-                                           ", cannot add value " + deltaVal +
-                                           " (from " + data.getValue() + ")");
+                        LOG.error("Series \"" + seriesName +
+                                  "\" already contains " + oldVal + " at " +
+                                  seconds + ", cannot add value " + deltaVal +
+                                  " (from " + data.getValue() + ")");
                         continue;
                     }
                 }
@@ -196,7 +198,7 @@ class DoubleStat
             try {
                 seconds = data.getTime().getSecond();
             } catch (Exception exc) {
-                System.err.println("Cannot extract seconds from " + data);
+                LOG.error("Cannot extract seconds from " + data);
                 continue;
             }
 
@@ -209,17 +211,16 @@ class DoubleStat
                 try {
                     oldVal = (long) series.getDataItem(seconds).getValue();
                 } catch (Exception ex2) {
-                    System.err.println("Cannot get previous value from" +
-                                       " series \"" + seriesName + "\"");
+                    LOG.error("Cannot get previous value from series \"" +
+                              seriesName + "\"");
                     continue;
                 }
 
                 if (Math.abs(val - oldVal) > 0.2) {
-                    System.err.println("Series \"" + seriesName +
-                                       "\" already contains " + oldVal +
-                                       " at " + seconds +
-                                       ", cannot add value " + val +
-                                       " (from " + data + ")");
+                    LOG.error("Series \"" + seriesName +
+                              "\" already contains " + oldVal + " at " +
+                              seconds + ", cannot add value " + val +
+                              " (from " + data + ")");
                     continue;
                 }
             }

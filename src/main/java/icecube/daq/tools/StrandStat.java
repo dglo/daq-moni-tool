@@ -1,5 +1,7 @@
 package icecube.daq.tools;
 
+import org.apache.log4j.Logger;
+
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -54,6 +56,8 @@ class StrandData
 class StrandStat
     extends StatParent
 {
+    private static final Logger LOG = Logger.getLogger(StrandStat.class);
+
     private int numStrands;
 
     StrandStat(int numStrands)
@@ -98,7 +102,7 @@ class StrandStat
             try {
                 seconds = data.getTime().getSecond();
             } catch (Exception exc) {
-                System.err.println("Cannot extract seconds from " + data);
+                LOG.error("Cannot extract seconds from " + data);
                 continue;
             }
 
@@ -135,7 +139,7 @@ class StrandStat
                 try {
                     seconds = data.getTime().getSecond();
                 } catch (Exception exc) {
-                    System.err.println("Cannot extract seconds from " + data);
+                    LOG.error("Cannot extract seconds from " + data);
                     continue;
                 }
 
@@ -191,7 +195,7 @@ class StrandStat
             try {
                 seconds = data.getTime().getSecond();
             } catch (Exception exc) {
-                System.err.println("Cannot extract seconds from " + data);
+                LOG.error("Cannot extract seconds from " + data);
                 continue;
             }
 
@@ -238,9 +242,8 @@ class StrandStat
                 statData.add(sectionHost, sectionName, name,
                              new StrandData(time, vals));
             } catch (Error err) {
-                System.err.println("Bad strands for " + sectionHost + "/" +
-                                   sectionName + "/" + name + " " + time + ": " +
-                                   err.getMessage());
+                LOG.error("Bad strands for " + sectionHost + "/" +
+                          sectionName + "/" + name + " " + time, err);
             }
         }
 
