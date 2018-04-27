@@ -9,9 +9,9 @@ abstract class BaseData
         this.time = time;
     }
 
-    abstract String getDataString();
-
     abstract StatParent createParent();
+
+    abstract String getDataString();
 
     ChartTime getTime()
     {
