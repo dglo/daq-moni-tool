@@ -2032,8 +2032,26 @@ abstract class BaseParser
     private boolean done;
     private ChartTime time;
 
-    BaseParser()
+    private String sectionHost;
+    private String sectionName;
+
+    private boolean grabStrandDepths;
+    private boolean ignoreSection;
+
+    BaseParser(String host, String name)
     {
+        sectionHost = host;
+        sectionName = name;
+    }
+
+    public String getHost()
+    {
+        return sectionHost;
+    }
+
+    public String getName()
+    {
+        return sectionName;
     }
 
     public ChartTime getTime()
@@ -2046,133 +2064,9 @@ abstract class BaseParser
         return done;
     }
 
-    abstract boolean match(StatData statData, String line)
-        throws StatParseException;
-
-    void setDone()
-    {
-        done = true;
-    }
-
-    void setTime(long secs)
-    {
-        time = new ChartTime(secs);
-    }
-}
-
-final class BombardParser
-    extends BaseParser
-{
-    private static final Pattern PARSE_PAT =
-        Pattern.compile(
-            "^\\.*((\\S+#\\d+)\\s+)?(\\d+):\\s+(\\S*)MonitoringData:\\s*$");
-
-    private String sectionName;
-
-    private BombardParser(String name)
-    {
-        sectionName = name;
-    }
-
-    public boolean match(StatData statData, String line)
+    public boolean match(StatData statData, String line, boolean verbose)
         throws StatParseException
     {
-        ChartTime time = getTime();
-
-        if (LongStat.save(statData, sectionName, time, line)) {
-            return true;
-        }
-
-        if (MemoryStat.save(statData, sectionName, time, line)) {
-            return true;
-        }
-
-        if (DoubleStat.save(statData, sectionName, time, line)) {
-            return true;
-        }
-
-        if (TimingStat.save(statData, sectionName, time, line)) {
-            return true;
-        }
-
-        if (StringStat.save(statData, sectionName, time, line)) {
-            return true;
-        }
-
-        if (matchStart(this, line) != null) {
-            return true;
-        }
-
-        if (line.startsWith("BufMgr ") || line.startsWith("Processed ")) {
-            setDone();
-            return true;
-        }
-
-        throw new StatParseException("Unknown line \"" + line + "\"");
-    }
-
-    static BombardParser matchStart(String line)
-    {
-        return matchStart(null, line);
-    }
-
-    static BombardParser matchStart(BombardParser parser, String line)
-    {
-        Matcher matcher = PARSE_PAT.matcher(line);
-        if (!matcher.find()) {
-            return null;
-        }
-
-        long val;
-        try {
-            val = Long.parseLong(matcher.group(3));
-        } catch (NumberFormatException nfe) {
-            return null;
-        }
-
-        final String name = matcher.group(1);
-
-        if (parser == null) {
-            parser = new BombardParser(name);
-        } else {
-            parser.sectionName = name;
-        }
-
-        parser.setTime(val);
-
-        return parser;
-    }
-}
-
-final class EBLogParser
-    extends BaseParser
-{
-    private static final Pattern PARSE_PAT =
-        Pattern.compile("^\\s+(\\d+):\\s+(\\S+)\\s+(\\S\\S[^\\s:]+):\\s*$");
-    private static final Pattern HUB_PAT =
-        Pattern.compile("^\\s+(\\d+):\\s+(\\S+)__(\\d+):\\s*$");
-    private static final Pattern RAWTIME_PAT =
-        Pattern.compile("^\\s+(\\d+):\\s*$");
-    private static final Pattern RAWNAME_PAT =
-        Pattern.compile("^(\\S+)\\s+(\\S\\S[^\\s:]+):\\s*$");
-
-    private String sectionHost;
-    private String sectionName;
-
-    private boolean grabStrandDepths;
-    private boolean ignoreSection;
-
-    private EBLogParser(String host, String name)
-    {
-        sectionHost = host;
-        sectionName = name;
-    }
-
-    public boolean match(StatData statData, String line)
-        throws StatParseException
-    {
-        ChartTime time = getTime();
-
         if (grabStrandDepths) {
             grabStrandDepths = false;
             if (StrandStat.save(statData, sectionHost, sectionName, time,
@@ -2190,31 +2084,23 @@ final class EBLogParser
         }
 
         if (line.startsWith("Healthy flag: ") ||
-            line.startsWith("Back End State: ") ||
-            line.startsWith("Missing field: ") ||
-            line.startsWith("Statistics for ") ||
-            line.startsWith("Dump for ") ||
-            line.startsWith("Fetch of ") ||
-            line.startsWith("nodeport localhost") ||
+            line.contains("BackEndState: ") ||
             line.startsWith("Failed to fetch "))
         {
             return true;
-        } else if (line.startsWith("Strand Depths:")) {
+        } else if (line.startsWith("StrandDepths:")) {
             grabStrandDepths = true;
             return true;
-        } else if (line.startsWith("Trigger count:")) {
-            if (TriggerStat.save(statData, sectionHost, sectionName, time,
-                                 line, ignoreSection))
-            {
-                return true;
-            }
-
-            System.err.println("Bad trigger count line \"" + line + "\"");
-            return false;
         }
 
         if (LongStat.save(statData, sectionHost, sectionName, time, line,
-                            ignoreSection))
+                          ignoreSection))
+        {
+            return true;
+        }
+
+        if (ListStat.save(statData, sectionHost, sectionName, time, line,
+                          ignoreSection))
         {
             return true;
         }
@@ -2226,7 +2112,7 @@ final class EBLogParser
         }
 
         if (DoubleStat.save(statData, sectionHost, sectionName, time, line,
-                            ignoreSection))
+                          ignoreSection))
         {
             return true;
         }
@@ -2237,22 +2123,66 @@ final class EBLogParser
             return true;
         }
 
+        if (StringStat.save(statData, sectionHost, sectionName, time, line,
+                          ignoreSection))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    void setDone()
+    {
+        done = true;
+    }
+
+    void setHostAndName(String host, String name)
+    {
+        sectionHost = host;
+        sectionName = name;
+    }
+
+    void setIgnoreSection(boolean val)
+    {
+        ignoreSection = val;
+    }
+
+    void setTime(long secs)
+    {
+        time = new ChartTime(secs);
+    }
+}
+
+final class EBLogParser
+    extends BaseParser
+{
+    private static final Pattern PARSE_PAT =
+        Pattern.compile("^\\s+(\\d+):\\s+(\\S+)\\s+(\\S\\S[^\\s:]+):\\s*$");
+    private static final Pattern HUB_PAT =
+        Pattern.compile("^\\s+(\\d+):\\s+(\\S+)__(\\d+):\\s*$");
+    private static final Pattern RAWTIME_PAT =
+        Pattern.compile("^\\s+(\\d+):\\s*$");
+    private static final Pattern RAWNAME_PAT =
+        Pattern.compile("^(\\S+)\\s+(\\S\\S[^\\s:]+):\\s*$");
+
+    private EBLogParser(String host, String name)
+    {
+        super(host, name);
+    }
+
+    public boolean match(StatData statData, String line, boolean verbose)
+        throws StatParseException
+    {
+        if (super.match(statData, line, verbose)) {
+            return true;
+        }
+
         if (matchStart(this, line) != null) {
             return true;
         }
 
-        if (line.startsWith(sectionHost + " " + sectionName)) {
-            return true;
-        }
-
-        final String oldHost = "spts-evbuilder";
-        final String oldName = "ebstrands";
-
-        if (line.startsWith(oldHost + " " + oldName)) {
-
-            sectionHost = oldHost;
-            sectionName = oldName;
-
+        if (line.startsWith(getHost() + " " + getName())) {
             return true;
         }
 
@@ -2299,8 +2229,7 @@ final class EBLogParser
         if (parser == null) {
             parser = new EBLogParser(host, name);
         } else {
-            parser.sectionHost = host;
-            parser.sectionName = name;
+            parser.setHostAndName(host, name);
         }
 
         // eblog times are in seconds
@@ -2326,94 +2255,20 @@ final class PDAQParser
         dateFmt.setTimeZone(TimeZone.getTimeZone("UTC"));
     };
 
-    private String sectionHost;
-    private String sectionName;
     private boolean omitDataCollector;
-
-    private boolean grabStrandDepths;
-    private boolean ignoreSection;
 
     private PDAQParser(String sectionHost, String sectionName,
                        boolean omitDataCollector)
     {
-        this.sectionHost = sectionHost;
-        this.sectionName = sectionName;
+        super(sectionHost, sectionName);
+
         this.omitDataCollector = omitDataCollector;
     }
 
-    public boolean match(StatData statData, String line)
+    public boolean match(StatData statData, String line, boolean verbose)
         throws StatParseException
     {
-        ChartTime time = getTime();
-
-        if (grabStrandDepths) {
-            grabStrandDepths = false;
-            if (StrandStat.save(statData, sectionHost, sectionName, time,
-                                line, ignoreSection))
-            {
-                return true;
-            }
-
-            System.err.println("Bad strand depths \"" + line + "\"");
-            return false;
-        }
-
-        if (line.startsWith("Number of ")) {
-            line = "Num " + line.substring(10);
-        }
-
-        if (line.startsWith("Healthy flag: ") ||
-            line.contains("BackEndState: ") ||
-            line.startsWith("Failed to fetch "))
-        {
-            return true;
-        } else if (line.startsWith("StrandDepths:")) {
-            grabStrandDepths = true;
-            return true;
-        } else if (line.startsWith("Triggercount:")) {
-            if (TriggerStat.save(statData, sectionHost, sectionName, time,
-                                 line, ignoreSection))
-            {
-                return true;
-            }
-
-            System.err.println("Bad trigger count line \"" + line + "\"");
-            return false;
-        }
-
-        if (LongStat.save(statData, sectionHost, sectionName, time, line,
-                          ignoreSection))
-        {
-            return true;
-        }
-
-        if (ListStat.save(statData, sectionHost, sectionName, time, line,
-                          ignoreSection))
-        {
-            return true;
-        }
-
-        if (MemoryStat.save(statData, sectionHost, sectionName, time, line,
-                            ignoreSection))
-        {
-            return true;
-        }
-
-        if (DoubleStat.save(statData, sectionHost, sectionName, time, line,
-                          ignoreSection))
-        {
-            return true;
-        }
-
-        if (TimingStat.save(statData, sectionHost, sectionName, time, line,
-                          ignoreSection))
-        {
-            return true;
-        }
-
-        if (StringStat.save(statData, sectionHost, sectionName, time, line,
-                          ignoreSection))
-        {
+        if (super.match(statData, line, verbose)) {
             return true;
         }
 
@@ -2443,7 +2298,7 @@ final class PDAQParser
 
         String sectionHost;
         if (inputSrc == null) {
-            sectionHost = parser.sectionHost;
+            sectionHost = parser.getHost();
         } else {
             sectionHost = inputSrc.toString();
             if (sectionHost.endsWith(".moni")) {
@@ -2458,12 +2313,12 @@ final class PDAQParser
             parser =
                 new PDAQParser(sectionHost, sectionName, omitDataCollector);
         } else {
-            parser.sectionHost = sectionHost;
-            parser.sectionName = sectionName;
+            parser.setHostAndName(sectionHost, sectionName);
         }
 
-        parser.ignoreSection = omitDataCollector &&
+        final boolean ignore = omitDataCollector &&
             sectionName.startsWith("DataCollectorMonitor");
+        parser.setIgnoreSection(ignore);
 
         if (matcher.groupCount() > 1) {
             Date myDate;
@@ -2523,15 +2378,12 @@ public class StatData
                 if (parser == null) {
                     parser = EBLogParser.matchStart(line);
                     if (parser == null) {
-                        parser = BombardParser.matchStart(line);
-                        if (parser == null) {
-                            System.err.println("?? " + line);
-                        }
+                        System.err.println("?? " + line);
                     }
                 }
             } else {
                 try {
-                    parser.match(this, line);
+                    parser.match(this, line, verbose);
                 } catch (StatParseException pe) {
                     System.err.println(pe.getMessage());
                     continue;
