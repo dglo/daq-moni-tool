@@ -11,7 +11,7 @@ abstract class BaseData
 
     abstract String getDataString();
 
-    abstract StatParent getParent();
+    abstract StatParent createParent();
 
     ChartTime getTime()
     {

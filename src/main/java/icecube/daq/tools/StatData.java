@@ -35,7 +35,7 @@ class LongData
         return Long.toString(val);
     }
 
-    StatParent getParent()
+    StatParent createParent()
     {
         return new LongStat();
     }
@@ -77,13 +77,34 @@ class LongStat
         for (BaseData bd : iterator()) {
             LongData data = (LongData) bd;
 
+            Second seconds;
             try {
-                series.add(data.getTime().getSecond(), data.getValue());
-            } catch (Exception ex) {
-                System.err.println("Series \"" + seriesName +
-                                   "\" already contains data at " +
-                                   data.getTime().getSecond() +
-                                   ", cannot add value " + data.getValue());
+                seconds = data.getTime().getSecond();
+            } catch (Exception exc) {
+                System.err.println("Cannot extract seconds from " + data);
+                continue;
+            }
+
+            final long val = data.getValue();
+            try {
+                series.add(seconds, val);
+            } catch (Exception exc) {
+                long oldVal;
+                try {
+                    oldVal = (long) series.getDataItem(seconds).getValue();
+                } catch (Exception ex2) {
+                    System.err.println("Cannot get previous value from" +
+                                       " series \"" + seriesName + "\"");
+                    continue;
+                }
+
+                if (Math.abs(val - oldVal) > 2) {
+                    System.err.println("Series \"" + seriesName +
+                                       "\" already contains " + oldVal +
+                                       " at " + seconds +
+                                       ", cannot add value " + val);
+                    continue;
+                }
             }
         }
 
@@ -108,14 +129,42 @@ class LongStat
             if (firstVal) {
                 firstVal = false;
             } else {
+                Second seconds;
                 try {
-                    series.add(data.getTime().getSecond(),
-                               data.getValue() - prevVal);
-                } catch (Exception ex) {
-                    System.err.println("Series \"" + seriesName +
-                                       "\" already contains data at " +
-                                       data.getTime().getSecond() +
-                                       ", cannot add value " + data.getValue());
+                    seconds = data.getTime().getSecond();
+                } catch (Exception exc) {
+                    System.err.println("Cannot extract seconds from " + data);
+                    continue;
+                }
+
+                long deltaVal;
+                try {
+                    deltaVal = data.getValue() - prevVal;
+                } catch (Exception exc) {
+                    System.err.println("Cannot compute delta for " + data);
+                    continue;
+                }
+
+                try {
+                    series.add(seconds, deltaVal);
+                } catch (Exception exc) {
+                    long oldVal;
+                    try {
+                        oldVal = (long) series.getDataItem(seconds).getValue();
+                    } catch (Exception ex2) {
+                        System.err.println("Cannot get previous value from" +
+                                           " series \"" + seriesName + "\"");
+                        continue;
+                    }
+
+                    if (Math.abs(deltaVal - oldVal) > 2) {
+                        System.err.println("Series \"" + seriesName +
+                                       "\" already contains " + oldVal +
+                                           " at " + seconds +
+                                       ", cannot add value " + deltaVal +
+                                       " (from " + data.getValue() + ")");
+                        continue;
+                    }
                 }
             }
 
@@ -149,18 +198,45 @@ class LongStat
         }
 
         double div = maxVal - minVal;
+        if (div == 0.0) {
+            System.err.println("Series \"" + seriesName + "\" min/max values" +
+                               " are identical; skipping");
+            return null;
+        }
 
         for (BaseData bd : iterator()) {
             LongData data = (LongData) bd;
 
-            double val = ((double) (data.getValue() - minVal)) / div;
+            Second seconds;
             try {
-                series.add(data.getTime().getSecond(), val);
-            } catch (Exception ex) {
-                System.err.println("Series \"" + seriesName +
-                                   "\" already contains data at " +
-                                   data.getTime().getSecond() +
-                                   ", cannot add value " + val);
+                seconds = data.getTime().getSecond();
+            } catch (Exception exc) {
+                System.err.println("Cannot extract seconds from " + data);
+                continue;
+            }
+
+            double val = ((double) (data.getValue() - minVal)) / div;
+
+            try {
+                series.add(seconds, val);
+            } catch (Exception exc) {
+                double oldVal;
+                try {
+                    oldVal = (long) series.getDataItem(seconds).getValue();
+                } catch (Exception ex2) {
+                    System.err.println("Cannot get previous value from" +
+                                       " series \"" + seriesName + "\"");
+                    continue;
+                }
+
+                if (Math.abs(val - oldVal) > 0.2) {
+                    System.err.println("Series \"" + seriesName +
+                                       "\" already contains " + oldVal +
+                                       " at " + seconds +
+                                       ", cannot add value " + val +
+                                       " (from " + data + ")");
+                    continue;
+                }
             }
         }
 
@@ -232,7 +308,7 @@ class DoubleData
         return Double.toString(val);
     }
 
-    StatParent getParent()
+    StatParent createParent()
     {
         return new DoubleStat();
     }
@@ -274,13 +350,35 @@ class DoubleStat
         for (BaseData bd : iterator()) {
             DoubleData data = (DoubleData) bd;
 
+            Second seconds;
             try {
-                series.add(data.getTime().getSecond(), data.getValue());
-            } catch (Exception ex) {
-                System.err.println("Series \"" + seriesName +
-                                   "\" already contains data at " +
-                                   data.getTime().getSecond() +
-                                   ", cannot add value " + data.getValue());
+                seconds = data.getTime().getSecond();
+            } catch (Exception exc) {
+                System.err.println("Cannot extract seconds from " + data);
+                continue;
+            }
+
+            final double val = data.getValue();
+
+            try {
+                series.add(seconds, val);
+            } catch (Exception exc) {
+                double oldVal;
+                try {
+                    oldVal = (double) series.getDataItem(seconds).getValue();
+                } catch (Exception ex2) {
+                    System.err.println("Cannot get previous value from" +
+                                       " series \"" + seriesName + "\"");
+                    continue;
+                }
+
+                if (Math.abs(val - oldVal) > 0.2) {
+                    System.err.println("Series \"" + seriesName +
+                                       "\" already contains " + oldVal +
+                                       " at " + seconds +
+                                       ", cannot add value " + val);
+                    continue;
+                }
             }
         }
 
@@ -305,14 +403,42 @@ class DoubleStat
             if (firstVal) {
                 firstVal = false;
             } else {
+                Second seconds;
                 try {
-                    series.add(data.getTime().getSecond(),
-                               data.getValue() - prevVal);
+                    seconds = data.getTime().getSecond();
+                } catch (Exception exc) {
+                    System.err.println("Cannot extract seconds from " + data);
+                    continue;
+                }
+
+                double deltaVal;
+                try {
+                    deltaVal = data.getValue() - prevVal;
+                } catch (Exception exc) {
+                    System.err.println("Cannot compute delta for " + data);
+                    continue;
+                }
+
+                try {
+                    series.add(seconds, deltaVal);
                 } catch (Exception ex) {
-                    System.err.println("Series \"" + seriesName +
-                                       "\" already contains data at " +
-                                       data.getTime().getSecond() +
-                                       ", cannot add value " + data.getValue());
+                    double oldVal;
+                    try {
+                        oldVal = (long) series.getDataItem(seconds).getValue();
+                    } catch (Exception ex2) {
+                        System.err.println("Cannot get previous value from" +
+                                           " series \"" + seriesName + "\"");
+                        continue;
+                    }
+
+                    if (Math.abs(deltaVal - oldVal) > 0.2) {
+                        System.err.println("Series \"" + seriesName +
+                                           "\" already contains " + oldVal +
+                                           " at " + seconds +
+                                           ", cannot add value " + deltaVal +
+                                           " (from " + data.getValue() + ")");
+                        continue;
+                    }
                 }
             }
 
@@ -350,15 +476,36 @@ class DoubleStat
         for (BaseData bd : iterator()) {
             DoubleData data = (DoubleData) bd;
 
+            Second seconds;
+            try {
+                seconds = data.getTime().getSecond();
+            } catch (Exception exc) {
+                System.err.println("Cannot extract seconds from " + data);
+                continue;
+            }
+
             double val = (data.getValue() - minVal) / div;
 
             try {
-                series.add(data.getTime().getSecond(), val);
+                series.add(seconds, val);
             } catch (Exception ex) {
-                System.err.println("Series \"" + seriesName +
-                                   "\" already contains data at " +
-                                   data.getTime().getSecond() +
-                                   ", cannot add value " + val);
+                double oldVal;
+                try {
+                    oldVal = (long) series.getDataItem(seconds).getValue();
+                } catch (Exception ex2) {
+                    System.err.println("Cannot get previous value from" +
+                                       " series \"" + seriesName + "\"");
+                    continue;
+                }
+
+                if (Math.abs(val - oldVal) > 0.2) {
+                    System.err.println("Series \"" + seriesName +
+                                       "\" already contains " + oldVal +
+                                       " at " + seconds +
+                                       ", cannot add value " + val +
+                                       " (from " + data + ")");
+                    continue;
+                }
             }
         }
 
@@ -442,7 +589,7 @@ class MemoryData
         return freeMem;
     }
 
-    StatParent getParent()
+    StatParent createParent()
     {
         return new MemoryStat();
     }
@@ -489,24 +636,32 @@ class MemoryStat
         for (BaseData bd : iterator()) {
             MemoryData data = (MemoryData) bd;
 
+            Second seconds;
             try {
-                usedSeries.add(data.getTime().getSecond(),
-                               data.getUsedMemory());
+                seconds = data.getTime().getSecond();
+            } catch (Exception exc) {
+                System.err.println("Cannot extract seconds from " + data);
+                continue;
+            }
+
+            try {
+                usedSeries.add(seconds, data.getUsedMemory());
             } catch (Exception ex) {
+                final Number tmpVal =
+                    usedSeries.getDataItem(seconds).getValue();
                 System.err.println("Series \"" + prefix +
-                                   " Used\" already contains data at " +
-                                   data.getTime().getSecond() +
-                                   ", cannot add value " +
+                                   " Used\" already contains " + tmpVal +
+                                   " at " + seconds + ", cannot add value " +
                                    data.getUsedMemory());
             }
             try {
-                freeSeries.add(data.getTime().getSecond(),
-                               data.getFreeMemory());
+                freeSeries.add(seconds, data.getFreeMemory());
             } catch (Exception ex) {
+                final Number tmpVal =
+                    freeSeries.getDataItem(seconds).getValue();
                 System.err.println("Series \"" + prefix +
-                                   " Free\" already contains data at " +
-                                   data.getTime().getSecond() +
-                                   ", cannot add value " +
+                                   " Free\" already contains " + tmpVal +
+                                   " at " + seconds + ", cannot add value " +
                                    data.getFreeMemory());
             }
         }
@@ -538,24 +693,38 @@ class MemoryStat
             } else {
                 long val;
 
+                Second seconds;
+                try {
+                    seconds = data.getTime().getSecond();
+                } catch (Exception exc) {
+                    System.err.println("Cannot extract seconds from " + data);
+                    continue;
+                }
+
                 val = data.getUsedMemory() - prevUsed;
                 try {
-                    usedSeries.add(data.getTime().getSecond(), val);
+                    usedSeries.add(seconds, val);
                 } catch (Exception ex) {
+                    final Number tmpVal =
+                        usedSeries.getDataItem(seconds).getValue();
                     System.err.println("Series \"" + prefix +
-                                       " Used\" already contains data at " +
-                                       data.getTime().getSecond() +
-                                       ", cannot add value " + val);
+                                       " Used\" already contains " + tmpVal +
+                                       " at " + seconds +
+                                       ", cannot add value " + val +
+                                       " (from " + data + ")");
                 }
 
                 val = data.getFreeMemory() - prevFree;
                 try {
-                    freeSeries.add(data.getTime().getSecond(), val);
+                    freeSeries.add(seconds, val);
                 } catch (Exception ex) {
+                    final Number tmpVal =
+                        freeSeries.getDataItem(seconds).getValue();
                     System.err.println("Series \"" + prefix +
-                                       " Free\" already contains data at " +
-                                       data.getTime().getSecond() +
-                                       ", cannot add value " + val);
+                                       " Free\" already contains " + tmpVal +
+                                       " at " + seconds +
+                                       ", cannot add value " + val +
+                                       " (from " + data + ")");
                 }
             }
 
@@ -603,24 +772,30 @@ class MemoryStat
         for (BaseData bd : iterator()) {
             MemoryData data = (MemoryData) bd;
 
+            Second seconds;
+            try {
+                seconds = data.getTime().getSecond();
+            } catch (Exception exc) {
+                System.err.println("Cannot extract seconds from " + data);
+                continue;
+            }
+
             double used = ((double) (data.getUsedMemory() - minVal)) / div;
             try {
-                usedSeries.add(data.getTime().getSecond(), used);
+                usedSeries.add(seconds, used);
             } catch (Exception ex) {
                 System.err.println("Series \"" + prefix +
                                    " Used\" already contains data at " +
-                                   data.getTime().getSecond() +
-                                   ", cannot add value " + used);
+                                   seconds + ", cannot add value " + used);
             }
 
             double free = ((double) (data.getFreeMemory() - minVal)) / div;
             try {
-                freeSeries.add(data.getTime().getSecond(), free);
+                freeSeries.add(seconds, free);
             } catch (Exception ex) {
                 System.err.println("Series \"" + prefix +
                                    " Free\" already contains data at " +
-                                   data.getTime().getSecond() +
-                                   ", cannot add value " + free);
+                                   seconds + ", cannot add value " + free);
             }
         }
 
@@ -653,6 +828,11 @@ class MemoryStat
             }
         }
 
+        if (time == null) {
+            throw new StatParseException("Found " + name +
+                                         " stat before time was set");
+        }
+
         long[] memVals = new long[3];
         for (int i = 0; i < memVals.length; i++) {
             final int offset = 4 + (i * 2);
@@ -681,11 +861,6 @@ class MemoryStat
                     throw new Error("Unknown memory suffix '" + suffix + "'");
                 }
             }
-        }
-
-        if (time == null) {
-            throw new StatParseException("Found " + name +
-                                         " stat before time was set");
         }
 
         if (!ignore) {
@@ -719,7 +894,7 @@ class StringData
         return "\"" + val + "\"";
     }
 
-    StatParent getParent()
+    StatParent createParent()
     {
         return new StringStat();
     }
@@ -843,7 +1018,7 @@ class StrandData
         return depths.length;
     }
 
-    StatParent getParent()
+    StatParent createParent()
     {
         return new StrandStat(depths.length);
     }
@@ -903,8 +1078,16 @@ class StrandStat
         for (BaseData bd : iterator()) {
             StrandData data = (StrandData) bd;
 
+            Second seconds;
+            try {
+                seconds = data.getTime().getSecond();
+            } catch (Exception exc) {
+                System.err.println("Cannot extract seconds from " + data);
+                continue;
+            }
+
             for (int i = 0; i < numStrands; i++) {
-                series[i].add(data.getTime().getSecond(), data.getStrand(i));
+                series[i].add(seconds, data.getStrand(i));
             }
         }
 
@@ -932,9 +1115,16 @@ class StrandStat
             if (firstVal) {
                 firstVal = false;
             } else {
+                Second seconds;
+                try {
+                    seconds = data.getTime().getSecond();
+                } catch (Exception exc) {
+                    System.err.println("Cannot extract seconds from " + data);
+                    continue;
+                }
+
                 for (int i = 0; i < numStrands; i++) {
-                    series[i].add(data.getTime().getSecond(),
-                                  data.getStrand(i) - prevVal[i]);
+                    series[i].add(seconds, data.getStrand(i) - prevVal[i]);
                 }
             }
 
@@ -981,10 +1171,18 @@ class StrandStat
         for (BaseData bd : iterator()) {
             StrandData data = (StrandData) bd;
 
+            Second seconds;
+            try {
+                seconds = data.getTime().getSecond();
+            } catch (Exception exc) {
+                System.err.println("Cannot extract seconds from " + data);
+                continue;
+            }
+
             for (int i = 0; i < numStrands; i++) {
                 double val = ((double) (data.getStrand(i) - minVal)) / div;
 
-                series[i].add(data.getTime().getSecond(), val);
+                series[i].add(seconds, val);
             }
         }
 
@@ -1063,7 +1261,7 @@ class TriggerData
         return dVal;
     }
 
-    StatParent getParent()
+    StatParent createParent()
     {
         return new TriggerStat();
     }
@@ -1109,22 +1307,30 @@ class TriggerStat
         for (BaseData bd : iterator()) {
             TriggerData data = (TriggerData) bd;
 
+            Second seconds;
             try {
-                valSeries.add(data.getTime().getSecond(), data.getValue());
+                seconds = data.getTime().getSecond();
+            } catch (Exception exc) {
+                System.err.println("Cannot extract seconds from " + data);
+                continue;
+            }
+
+            try {
+                valSeries.add(seconds, data.getValue());
             } catch (Exception ex) {
                 System.err.println("Series \"" + seriesName +
                                    "\" already contains data at " +
-                                   data.getTime().getSecond() +
+                                   seconds +
                                    ", cannot add value " + data.getValue());
             }
 
             try {
-                trigSeries.add(data.getTime().getSecond(),
+                trigSeries.add(seconds,
                                data.getDoubleValue());
             } catch (Exception ex) {
                 System.err.println("Series \"" + seriesName +
                                    "\" already contains data at " +
-                                   data.getTime().getSecond() +
+                                   seconds +
                                    ", cannot add value " +
                                    data.getDoubleValue());
             }
@@ -1156,23 +1362,31 @@ class TriggerStat
             if (firstVal) {
                 firstVal = false;
             } else {
+                Second seconds;
+                try {
+                    seconds = data.getTime().getSecond();
+                } catch (Exception exc) {
+                    System.err.println("Cannot extract seconds from " + data);
+                    continue;
+                }
+
                 long lVal =  data.getValue() - prevVal;
                 try {
-                    valSeries.add(data.getTime().getSecond(), lVal);
+                    valSeries.add(seconds, lVal);
                 } catch (Exception ex) {
                     System.err.println("Series \"" + seriesName +
                                        "\" already contains data at " +
-                                       data.getTime().getSecond() +
+                                       seconds +
                                        ", cannot add value " + lVal);
                 }
 
                 double dVal =  data.getDoubleValue() - prevTrig;
                 try {
-                    trigSeries.add(data.getTime().getSecond(), dVal);
+                    trigSeries.add(seconds, dVal);
                 } catch (Exception ex) {
                     System.err.println("Series \"" + seriesName +
                                        "\" already contains data at " +
-                                       data.getTime().getSecond() +
+                                       seconds +
                                        ", cannot add value " + dVal);
                 }
             }
@@ -1226,23 +1440,31 @@ class TriggerStat
         for (BaseData bd : iterator()) {
             TriggerData data = (TriggerData) bd;
 
+            Second seconds;
+            try {
+                seconds = data.getTime().getSecond();
+            } catch (Exception exc) {
+                System.err.println("Cannot extract seconds from " + data);
+                continue;
+            }
+
             double val = ((double) (data.getValue() - minVal)) / div;
             try {
-                valSeries.add(data.getTime().getSecond(), val);
+                valSeries.add(seconds, val);
             } catch (Exception ex) {
                 System.err.println("Series \"" + seriesName +
                                    "\" already contains data at " +
-                                   data.getTime().getSecond() +
+                                   seconds +
                                    ", cannot add value " + val);
             }
 
             double dblVal = (data.getDoubleValue() - minDbl) / dblDiv;
             try {
-                trigSeries.add(data.getTime().getSecond(), dblVal);
+                trigSeries.add(seconds, dblVal);
             } catch (Exception ex) {
                 System.err.println("Series \"" + seriesName +
                                    "\" already contains data at " +
-                                   data.getTime().getSecond() +
+                                   seconds +
                                    ", cannot add value " + dblVal);
             }
         }
@@ -1372,7 +1594,7 @@ class TimingData
         return buf.toString();
     }
 
-    StatParent getParent()
+    StatParent createParent()
     {
         return new TimingStat();
     }
@@ -1448,6 +1670,14 @@ class TimingStat
         for (BaseData bd : iterator()) {
             TimingData data = (TimingData) bd;
 
+            Second seconds;
+            try {
+                seconds = data.getTime().getSecond();
+            } catch (Exception exc) {
+                System.err.println("Cannot extract seconds from " + data);
+                continue;
+            }
+
             for (TimingPiece piece : data.iterator()) {
                 int idx = titles.indexOf(piece.getTitle());
 
@@ -1457,7 +1687,7 @@ class TimingStat
                 val = val - prevVal[idx];
                 prevVal[idx] = tmpVal;
 
-                series[idx].add(data.getTime().getSecond(), val);
+                series[idx].add(seconds, val);
             }
         }
 
@@ -1529,6 +1759,14 @@ class TimingStat
         for (BaseData bd : iterator()) {
             TimingData data = (TimingData) bd;
 
+            Second seconds;
+            try {
+                seconds = data.getTime().getSecond();
+            } catch (Exception exc) {
+                System.err.println("Cannot extract seconds from " + data);
+                continue;
+            }
+
             for (TimingPiece piece : data.iterator()) {
                 int idx = titles.indexOf(piece.getTitle());
 
@@ -1539,7 +1777,7 @@ class TimingStat
                 prevVal[idx] = tmpVal;
 
                 double dVal = (val - minVal[idx]) / div[idx];
-                series[idx].add(data.getTime().getSecond(), dVal);
+                series[idx].add(seconds, dVal);
             }
         }
 
@@ -1629,7 +1867,7 @@ abstract class ListData
     abstract String getDataString();
     abstract int getNumEntries();
 
-    StatParent getParent()
+    StatParent createParent()
     {
         return new ListStat(getNumEntries());
     }
@@ -1833,8 +2071,16 @@ class ListStat
         for (BaseData bd : iterator()) {
             ListData data = (ListData) bd;
 
+            Second seconds;
+            try {
+                seconds = data.getTime().getSecond();
+            } catch (Exception exc) {
+                System.err.println("Cannot extract seconds from " + data);
+                continue;
+            }
+
             for (int i = 0; i < numEntries; i++) {
-                series[i].add(data.getTime().getSecond(), data.getRawValue(i));
+                series[i].add(seconds, data.getRawValue(i));
             }
         }
 
@@ -1862,9 +2108,16 @@ class ListStat
             if (firstVal) {
                 firstVal = false;
             } else {
+                Second seconds;
+                try {
+                    seconds = data.getTime().getSecond();
+                } catch (Exception exc) {
+                    System.err.println("Cannot extract seconds from " + data);
+                    continue;
+                }
+
                 for (int i = 0; i < numEntries; i++) {
-                    series[i].add(data.getTime().getSecond(),
-                                  data.getRawValue(i) - prevVal[i]);
+                    series[i].add(seconds, data.getRawValue(i) - prevVal[i]);
                 }
             }
 
@@ -1911,10 +2164,18 @@ class ListStat
         for (BaseData bd : iterator()) {
             ListData data = (ListData) bd;
 
+            Second seconds;
+            try {
+                seconds = data.getTime().getSecond();
+            } catch (Exception exc) {
+                System.err.println("Cannot extract seconds from " + data);
+                continue;
+            }
+
             for (int i = 0; i < numEntries; i++) {
                 double val = (data.getRawValue(i) - minVal) / div;
 
-                series[i].add(data.getTime().getSecond(), val);
+                series[i].add(seconds, val);
             }
         }
 
@@ -2304,6 +2565,9 @@ final class PDAQParser
             if (sectionHost.endsWith(".moni")) {
                 sectionHost =
                     sectionHost.substring(0, sectionHost.length() - 5);
+            } else if (sectionHost.endsWith(".moni.gz")) {
+                sectionHost =
+                    sectionHost.substring(0, sectionHost.length() - 8);
             }
         }
 
@@ -2385,7 +2649,10 @@ public class StatData
                 try {
                     parser.match(this, line, verbose);
                 } catch (StatParseException pe) {
-                    System.err.println(pe.getMessage());
+                    pe.printStackTrace();
+                    continue;
+                } catch (RuntimeException re) {
+                    re.printStackTrace();
                     continue;
                 }
 
@@ -2418,7 +2685,7 @@ public class StatData
             parent = (StatParent) statMap.get(name);
             isCreated = false;
         } else {
-            parent = datum.getParent();
+            parent = datum.createParent();
             statMap.put(name, parent);
             isCreated = true;
         }
@@ -2431,7 +2698,7 @@ public class StatData
                                    " datum " + datum + ": " +
                                    cce.getMessage());
             } else {
-                parent = datum.getParent();
+                parent = datum.createParent();
                 parent.add(datum);
 
                 statMap.put(name, parent);
