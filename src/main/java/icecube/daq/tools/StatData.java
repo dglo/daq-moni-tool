@@ -432,8 +432,8 @@ public class StatData
             parent.add(datum);
         } catch (ClassCastException cce) {
             if (isCreated || !parent.isEmpty()) {
-                LOG.error("Cannot add " + key + ":" + name + " datum " + datum,
-                          cce);
+                LOG.error("Cannot add " + key + ":" + name + " datum " +
+                          datum, cce);
             } else {
                 parent = datum.createParent();
                 parent.add(datum);
