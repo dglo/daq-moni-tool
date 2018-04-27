@@ -33,6 +33,11 @@
   pom's dependencyManagement -->
   <dependencies>
     <dependency>
+      <groupId>edu.wisc.icecube</groupId>
+      <artifactId>daq-common</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>org.jfree</groupId>
       <artifactId>jfreechart</artifactId>
     </dependency>
