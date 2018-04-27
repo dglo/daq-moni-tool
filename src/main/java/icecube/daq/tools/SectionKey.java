@@ -1,8 +1,12 @@
 package icecube.daq.tools;
 
+import org.apache.log4j.Logger;
+
 public class SectionKey
     implements Comparable
 {
+    private static final Logger LOG = Logger.getLogger(SectionKey.class);
+
     private String host;
     private String section;
 
@@ -31,8 +35,8 @@ public class SectionKey
             try {
                 inst = Integer.parseInt(numStr);
             } catch (NumberFormatException nfe) {
-                System.err.println("Bad instance number \"" + numStr +
-                                   "\" for host \"" + host + "\"");
+                LOG.error("Bad instance number \"" + numStr +
+                          "\" for host \"" + host + "\"");
             }
         }
     }

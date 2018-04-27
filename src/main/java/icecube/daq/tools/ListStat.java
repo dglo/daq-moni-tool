@@ -3,6 +3,8 @@ package icecube.daq.tools;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -179,6 +181,8 @@ class StringListData
 class ListStat
     extends StatParent
 {
+    private static final Logger LOG = Logger.getLogger(ListStat.class);
+
     private static final Pattern STAT_PAT =
         Pattern.compile("^\\s+([^\\s:]+):?\\s+\\[(.*)\\]\\s*$");
 
@@ -226,7 +230,7 @@ class ListStat
             try {
                 seconds = data.getTime().getSecond();
             } catch (Exception exc) {
-                System.err.println("Cannot extract seconds from " + data);
+                LOG.error("Cannot extract seconds from " + data);
                 continue;
             }
 
@@ -263,7 +267,7 @@ class ListStat
                 try {
                     seconds = data.getTime().getSecond();
                 } catch (Exception exc) {
-                    System.err.println("Cannot extract seconds from " + data);
+                    LOG.error("Cannot extract seconds from " + data);
                     continue;
                 }
 
@@ -319,7 +323,7 @@ class ListStat
             try {
                 seconds = data.getTime().getSecond();
             } catch (Exception exc) {
-                System.err.println("Cannot extract seconds from " + data);
+                LOG.error("Cannot extract seconds from " + data);
                 continue;
             }
 
@@ -420,7 +424,7 @@ class ListStat
             if (data == null) {
                 data = new StringListData(time, valStrs);
                 if (data == null) {
-                    System.err.println("Cannot parse " + name + " list data");
+                    LOG.error("Cannot parse " + name + " list data");
                     return true;
                 }
             }

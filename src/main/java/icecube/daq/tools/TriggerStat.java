@@ -3,6 +3,8 @@ package icecube.daq.tools;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -50,6 +52,8 @@ class TriggerData
 class TriggerStat
     extends StatParent
 {
+    private static final Logger LOG = Logger.getLogger(TriggerStat.class);
+
     private static final Pattern STAT_PAT =
         Pattern.compile("^Trigger\\s+count:\\s+(\\S+)" +
                         "Trigger(\\d?\\d?)\\s+(\\d+)\\s+(\\d+\\.\\d+)\\s*$");
@@ -81,28 +85,24 @@ class TriggerStat
             try {
                 seconds = data.getTime().getSecond();
             } catch (Exception exc) {
-                System.err.println("Cannot extract seconds from " + data);
+                LOG.error("Cannot extract seconds from " + data);
                 continue;
             }
 
             try {
                 valSeries.add(seconds, data.getValue());
             } catch (Exception ex) {
-                System.err.println("Series \"" + seriesName +
-                                   "\" already contains data at " +
-                                   seconds +
-                                   ", cannot add value " + data.getValue());
+                LOG.error("Series \"" + seriesName +
+                          "\" already contains data at " + seconds +
+                          ", cannot add value " + data.getValue());
             }
 
             try {
-                trigSeries.add(seconds,
-                               data.getDoubleValue());
+                trigSeries.add(seconds, data.getDoubleValue());
             } catch (Exception ex) {
-                System.err.println("Series \"" + seriesName +
-                                   "\" already contains data at " +
-                                   seconds +
-                                   ", cannot add value " +
-                                   data.getDoubleValue());
+                LOG.error("Series \"" + seriesName +
+                          "\" already contains data at " + seconds +
+                          ", cannot add value " + data.getDoubleValue());
             }
         }
 
@@ -136,7 +136,7 @@ class TriggerStat
                 try {
                     seconds = data.getTime().getSecond();
                 } catch (Exception exc) {
-                    System.err.println("Cannot extract seconds from " + data);
+                    LOG.error("Cannot extract seconds from " + data);
                     continue;
                 }
 
@@ -144,20 +144,18 @@ class TriggerStat
                 try {
                     valSeries.add(seconds, lVal);
                 } catch (Exception ex) {
-                    System.err.println("Series \"" + seriesName +
-                                       "\" already contains data at " +
-                                       seconds +
-                                       ", cannot add value " + lVal);
+                    LOG.error("Series \"" + seriesName +
+                              "\" already contains data at " + seconds +
+                              ", cannot add value " + lVal);
                 }
 
                 double dVal =  data.getDoubleValue() - prevTrig;
                 try {
                     trigSeries.add(seconds, dVal);
                 } catch (Exception ex) {
-                    System.err.println("Series \"" + seriesName +
-                                       "\" already contains data at " +
-                                       seconds +
-                                       ", cannot add value " + dVal);
+                    LOG.error("Series \"" + seriesName +
+                              "\" already contains data at " + seconds +
+                              ", cannot add value " + dVal);
                 }
             }
 
@@ -214,7 +212,7 @@ class TriggerStat
             try {
                 seconds = data.getTime().getSecond();
             } catch (Exception exc) {
-                System.err.println("Cannot extract seconds from " + data);
+                LOG.error("Cannot extract seconds from " + data);
                 continue;
             }
 
@@ -222,20 +220,18 @@ class TriggerStat
             try {
                 valSeries.add(seconds, val);
             } catch (Exception ex) {
-                System.err.println("Series \"" + seriesName +
-                                   "\" already contains data at " +
-                                   seconds +
-                                   ", cannot add value " + val);
+                LOG.error("Series \"" + seriesName +
+                          "\" already contains data at " + seconds +
+                          ", cannot add value " + val);
             }
 
             double dblVal = (data.getDoubleValue() - minDbl) / dblDiv;
             try {
                 trigSeries.add(seconds, dblVal);
             } catch (Exception ex) {
-                System.err.println("Series \"" + seriesName +
-                                   "\" already contains data at " +
-                                   seconds +
-                                   ", cannot add value " + dblVal);
+                LOG.error("Series \"" + seriesName +
+                          "\" already contains data at " + seconds +
+                          ", cannot add value " + dblVal);
             }
         }
 

@@ -14,12 +14,16 @@ import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
 
 abstract class BaseParser
 {
+    private static final Logger LOG = Logger.getLogger(BaseParser.class);
+
     private boolean done;
     private ChartTime time;
 
@@ -66,7 +70,7 @@ abstract class BaseParser
                 return true;
             }
 
-            System.err.println("Bad strand depths \"" + line + "\"");
+            LOG.error("Bad strand depths \"" + line + "\"");
             return false;
         }
 
@@ -233,6 +237,8 @@ final class EBLogParser
 final class PDAQParser
     extends BaseParser
 {
+    private static final Logger LOG = Logger.getLogger(PDAQParser.class);
+
     private static final Pattern BEAN_PAT =
         Pattern.compile("^Bean\\s+(\\S+)\\s*$");
     private static final Pattern BEANDATE_PAT =
@@ -319,7 +325,7 @@ final class PDAQParser
             try {
                 myDate = dateFmt.parse(matcher.group(2));
             } catch (ParseException pe) {
-                System.err.println("Ignoring bad date " + matcher.group(2));
+                LOG.error("Ignoring bad date " + matcher.group(2));
                 myDate = null;
             }
 
@@ -334,6 +340,8 @@ final class PDAQParser
 
 public class StatData
 {
+    private static final Logger LOG = Logger.getLogger(StatData.class);
+
     private HashMap<SectionKey, HashMap<String, StatParent>> sectionMap =
         new HashMap<SectionKey, HashMap<String, StatParent>>();
 
@@ -424,9 +432,8 @@ public class StatData
             parent.add(datum);
         } catch (ClassCastException cce) {
             if (isCreated || !parent.isEmpty()) {
-                System.err.println("Cannot add " + key + ":" + name +
-                                   " datum " + datum + ": " +
-                                   cce.getMessage());
+                LOG.error("Cannot add " + key + ":" + name + " datum " + datum,
+                          cce);
             } else {
                 parent = datum.createParent();
                 parent.add(datum);
@@ -434,8 +441,8 @@ public class StatData
                 statMap.put(name, parent);
             }
         } catch (Error err) {
-            System.err.println("Cannot add " + key + ":" + name +
-                               " datum " + datum + ": " +  err.getMessage());
+            LOG.error("Cannot add " + key + ":" + name + " datum " + datum,
+                      err);
         }
     }
 

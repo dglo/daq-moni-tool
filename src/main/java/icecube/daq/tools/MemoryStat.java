@@ -3,6 +3,8 @@ package icecube.daq.tools;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -55,6 +57,8 @@ class MemoryData
 class MemoryStat
     extends StatParent
 {
+    private static final Logger LOG = Logger.getLogger(MemoryStat.class);
+
     private static final Pattern STAT_PAT =
         Pattern.compile("^(\\s+([^\\s:]+):?|\\s*(.+)\\s*:)" +
                         "\\s+(\\d+)([KMG]?)\\s+used," +
@@ -154,8 +158,8 @@ class MemoryStat
                 } catch (Exception ex) {
                     final Number tmpVal =
                         usedSeries.getDataItem(seconds).getValue();
-                    System.err.println("Series \"" + prefix +
-                                       " Used\" already contains " + tmpVal +
+                    LOG.error("Series \"" + prefix +
+                              " Used\" already contains " + tmpVal +
                                        " at " + seconds +
                                        ", cannot add value " + val +
                                        " (from " + data + ")");
@@ -167,11 +171,10 @@ class MemoryStat
                 } catch (Exception ex) {
                     final Number tmpVal =
                         freeSeries.getDataItem(seconds).getValue();
-                    System.err.println("Series \"" + prefix +
-                                       " Free\" already contains " + tmpVal +
-                                       " at " + seconds +
-                                       ", cannot add value " + val +
-                                       " (from " + data + ")");
+                    LOG.error("Series \"" + prefix +
+                              " Free\" already contains " + tmpVal + " at " +
+                              seconds + ", cannot add value " + val +
+                              " (from " + data + ")");
                 }
             }
 
@@ -223,7 +226,7 @@ class MemoryStat
             try {
                 seconds = data.getTime().getSecond();
             } catch (Exception exc) {
-                System.err.println("Cannot extract seconds from " + data);
+                LOG.error("Cannot extract seconds from " + data);
                 continue;
             }
 
@@ -231,18 +234,18 @@ class MemoryStat
             try {
                 usedSeries.add(seconds, used);
             } catch (Exception ex) {
-                System.err.println("Series \"" + prefix +
-                                   " Used\" already contains data at " +
-                                   seconds + ", cannot add value " + used);
+                LOG.error("Series \"" + prefix +
+                          " Used\" already contains data at " + seconds +
+                          ", cannot add value " + used);
             }
 
             double free = ((double) (data.getFreeMemory() - minVal)) / div;
             try {
                 freeSeries.add(seconds, free);
             } catch (Exception ex) {
-                System.err.println("Series \"" + prefix +
-                                   " Free\" already contains data at " +
-                                   seconds + ", cannot add value " + free);
+                LOG.error("Series \"" + prefix +
+                          " Free\" already contains data at " + seconds +
+                          ", cannot add value " + free);
             }
         }
 

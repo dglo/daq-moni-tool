@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.log4j.Logger;
+
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
@@ -105,6 +107,8 @@ class TimingData
 class TimingStat
     extends StatParent
 {
+    private static final Logger LOG = Logger.getLogger(TimingStat.class);
+
     private static final Pattern STAT_PAT =
         Pattern.compile("^(\\S+.*\\s+Timing:|\\s+\\S+Timing):?\\s+(.*)\\s*$");
     private static final Pattern PIECE_PAT =
@@ -166,7 +170,7 @@ class TimingStat
             try {
                 seconds = data.getTime().getSecond();
             } catch (Exception exc) {
-                System.err.println("Cannot extract seconds from " + data);
+                LOG.error("Cannot extract seconds from " + data);
                 continue;
             }
 
@@ -255,7 +259,7 @@ class TimingStat
             try {
                 seconds = data.getTime().getSecond();
             } catch (Exception exc) {
-                System.err.println("Cannot extract seconds from " + data);
+                LOG.error("Cannot extract seconds from " + data);
                 continue;
             }
 
@@ -317,8 +321,7 @@ class TimingStat
             try {
                 data = new TimingPiece(title, cTime, num);
             } catch (StatParseException pex) {
-                System.err.println("Couldn't parse timing piece: " +
-                                   pex.getMessage());
+                LOG.error("Couldn't parse timing piece", pex);
                 continue;
             }
 

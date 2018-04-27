@@ -182,6 +182,8 @@ class ComponentInstance
 class ComponentData
     implements Iterable<ComponentInstance>
 {
+    private static final Logger LOG = Logger.getLogger(ComponentData.class);
+
     private String name;
     private ArrayList<ComponentInstance> list;
 
@@ -229,9 +231,9 @@ class ComponentData
 
             InstanceBean beanData = compInst.get(beanName);
             if (beanData != null) {
-                System.err.println("Found multiple instances of component \"" +
-                                   compName + "\" instance " + instNum +
-                                   " bean \"" + beanName + "\"");
+                LOG.error("Found multiple instances of component \"" +
+                          compName + "\" instance " + instNum + " bean \"" +
+                          beanName + "\"");
                 continue;
             }
 
@@ -365,6 +367,8 @@ abstract class SectionChoicesCheckBox
 class IncAllCheckBox
     extends SectionChoicesCheckBox
 {
+    private static final Logger LOG = Logger.getLogger(IncAllCheckBox.class);
+
     private ArrayList<JCheckBox> list = new ArrayList<JCheckBox>();
 
     IncAllCheckBox(String name, ChartChoices chartChoices,
@@ -400,9 +404,8 @@ class IncAllCheckBox
         } else if (evt.getStateChange() == ItemEvent.DESELECTED) {
             getBean().setIncludeAll(false);
         } else {
-            System.err.println("Unknown includeAll(" +
-                               getBean() + " event #" +
-                               evt.getStateChange() + ": " + evt);
+            LOG.error("Unknown includeAll(" + getBean() + " event #" +
+                      evt.getStateChange() + ": " + evt);
         }
     }
 }
@@ -410,6 +413,8 @@ class IncAllCheckBox
 class NameCheckBox
     extends SectionChoicesCheckBox
 {
+    private static final Logger LOG = Logger.getLogger(NameCheckBox.class);
+
     private JCheckBox incAllBox;
 
     NameCheckBox(String name, ChartChoices chartChoices, InstanceBean instBean,
@@ -434,9 +439,8 @@ class NameCheckBox
         } else if (evt.getStateChange() == ItemEvent.DESELECTED) {
             getBean().removeGraph(getText());
         } else {
-            System.err.println("Unknown sectionName(" +
-                               getBean() + " event #" +
-                               evt.getStateChange() + ": " + evt);
+            LOG.error("Unknown sectionName(" + getBean() + " event #" +
+                      evt.getStateChange() + ": " + evt);
         }
     }
 }
@@ -475,6 +479,8 @@ class TemplateCheckBox
 public class DAQMoniChart
     extends JFrame
 {
+    private static final Logger LOG = Logger.getLogger(DAQMoniChart.class);
+
     private static final String TEMPLATE_TITLE = "All";
 
     private ChartChoices chartChoices = new ChartChoices();
@@ -546,8 +552,7 @@ public class DAQMoniChart
                 statData.addData(new GraphSource(f), omitDataCollector,
                                  verbose);
             } catch (IOException ioe) {
-                System.err.println("Couldn't load \"" + f + "\":");
-                ioe.printStackTrace();
+                LOG.error("Couldn't load \"" + f + "\"", ioe);
             }
         }
     }
@@ -675,8 +680,8 @@ public class DAQMoniChart
                     } else if (evt.getStateChange() == ItemEvent.DESELECTED) {
                         chartChoices.setShowPoints(false);
                     } else {
-                        logMessage("Unknown showPoints event #" +
-                                   evt.getStateChange() + ": " + evt);
+                        LOG.error("Unknown showPoints event #" +
+                                  evt.getStateChange() + ": " + evt);
                     }
                 }
             });
@@ -691,8 +696,8 @@ public class DAQMoniChart
                     } else if (evt.getStateChange() == ItemEvent.DESELECTED) {
                         chartChoices.setHideLegends(false);
                     } else {
-                        logMessage("Unknown hideLegend event #" +
-                                   evt.getStateChange() + ": " + evt);
+                        LOG.error("Unknown hideLegend event #" +
+                                  evt.getStateChange() + ": " + evt);
                     }
                 }
             });
@@ -707,8 +712,8 @@ public class DAQMoniChart
                     } else if (evt.getStateChange() == ItemEvent.DESELECTED) {
                         chartChoices.setFilterBoring(false);
                     } else {
-                        logMessage("Unknown filterBoring event #" +
-                                   evt.getStateChange() + ": " + evt);
+                        LOG.error("Unknown filterBoring event #" +
+                                  evt.getStateChange() + ": " + evt);
                     }
                 }
             });
@@ -731,7 +736,7 @@ public class DAQMoniChart
                         new ChartGenerator(compList, statData, chartChoices);
 
                     if (chartGen.isEmpty()) {
-                        logMessage("No data found!");
+                        LOG.error("No data found!");
                     } else {
                         String title = chartGen.getTitle();
                         GraphFrame frame = new GraphFrame(title);
@@ -770,9 +775,9 @@ public class DAQMoniChart
 
                 JPanel subPane = (JPanel) instPane.getComponentAt(j);
                 if (subPane.getComponentCount() != 2) {
-                    System.err.println("Unexpected number of components in " +
-                                       pane.getTitleAt(i) + "-" +
-                                       instPane.getTitleAt(j) + " panel");
+                    LOG.error("Unexpected number of components in " +
+                              pane.getTitleAt(i) + "-" +
+                              instPane.getTitleAt(j) + " panel");
                     continue;
                 }
 
@@ -866,11 +871,6 @@ public class DAQMoniChart
         repaint();
     }
 
-    private void logMessage(String msg)
-    {
-        System.out.println(msg);
-    }
-
     private void popupAlert(String[] msgLines)
     {
         StringBuilder buf = new StringBuilder();
@@ -883,7 +883,7 @@ public class DAQMoniChart
             buf.append(msgLines[i]);
         }
 
-        logMessage(buf.toString());
+        LOG.error(buf.toString());
     }
 
     public static void main(String[] args)
