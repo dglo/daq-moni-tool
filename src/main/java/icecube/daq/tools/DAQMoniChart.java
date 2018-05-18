@@ -207,7 +207,7 @@ class ComponentData
         HashMap<String, ComponentData> map =
             new HashMap<String, ComponentData>();
 
-        for (SectionKey key : statData.getSections()) {
+        for (SectionKey key : statData.getSectionKeys()) {
             List<String> names = statData.getSectionNames(key);
             if (names.size() <= 0) {
                 continue;
@@ -533,27 +533,6 @@ public class DAQMoniChart
             panel.add(gridPanel, BorderLayout.CENTER);
 
             pane.addTab(instBean.getName(), panel);
-        }
-    }
-
-    private static final void addSource(StatData statData, File f,
-                                        boolean omitDataCollector,
-                                        boolean verbose)
-    {
-        if (f.isDirectory()) {
-            File[] list = f.listFiles();
-            for (int i = 0; i < list.length; i++) {
-                addSource(statData, list[i], omitDataCollector, verbose);
-            }
-        } else {
-            System.out.println(f + ":");
-
-            try {
-                statData.addData(new GraphSource(f), omitDataCollector,
-                                 verbose);
-            } catch (IOException ioe) {
-                LOG.error("Couldn't load \"" + f + "\"", ioe);
-            }
         }
     }
 
@@ -952,8 +931,11 @@ public class DAQMoniChart
 
         StatData statData = new StatData();
         for (File file : fileList) {
-            addSource(statData, file, omitDataCollector, verbose);
+            statData.loadFile(file, omitDataCollector, verbose);
         }
+
+        // reorganize some data
+        statData.transform();
 
         ArrayList<ComponentData> compList = ComponentData.extract(statData);
 

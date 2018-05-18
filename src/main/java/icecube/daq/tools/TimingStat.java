@@ -1,7 +1,9 @@
 package icecube.daq.tools;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -104,15 +106,73 @@ class TimingData
     }
 }
 
-class TimingStat
-    extends StatParent
+class TimingParser
+    extends BaseStatParser
 {
-    private static final Logger LOG = Logger.getLogger(TimingStat.class);
+    private static final Logger LOG = Logger.getLogger(TimingParser.class);
 
     private static final Pattern STAT_PAT =
         Pattern.compile("^(\\S+.*\\s+Timing:|\\s+\\S+Timing):?\\s+(.*)\\s*$");
     private static final Pattern PIECE_PAT =
         Pattern.compile("\\s*([^:]+):\\s(\\d+)/(\\d+)=(\\d+)#(\\d+\\.?\\d*%)");
+
+    Map<String, BaseData> parseLine(ChartTime time, String line,
+                                    boolean verbose)
+        throws StatParseException
+    {
+        Matcher matcher = STAT_PAT.matcher(line);
+        if (!matcher.find()) {
+            return null;
+        }
+
+        String dataStr = matcher.group(2);
+        if (dataStr.equals("NOT RUNNING")) {
+            return new HashMap<String, BaseData>();
+        }
+
+        String name = matcher.group(1);
+
+        ArrayList<TimingPiece> timing = null;
+
+        int startPos = 0;
+        while (true) {
+            matcher = PIECE_PAT.matcher(dataStr);
+            if (!matcher.find(startPos)) {
+                break;
+            }
+
+            final String title = matcher.group(1);
+            final String cTime = matcher.group(2);
+            final String num = matcher.group(3);
+
+            TimingPiece data;
+            try {
+                data = new TimingPiece(title, cTime, num);
+            } catch (StatParseException pex) {
+                LOG.error("Couldn't parse timing piece", pex);
+                continue;
+            }
+
+            if (timing == null) {
+                timing = new ArrayList<TimingPiece>();
+            }
+            timing.add(data);
+
+            startPos = matcher.end();
+        }
+
+        TimingData data = new TimingData(time, timing);
+
+        Map<String, BaseData> map = new HashMap<String, BaseData>();
+        map.put(name, data);
+        return map;
+    }
+}
+
+class TimingStat
+    extends StatParent<TimingData>
+{
+    private static final Logger LOG = Logger.getLogger(TimingStat.class);
 
     private ArrayList<String> titles = new ArrayList<String>();
 
@@ -120,11 +180,9 @@ class TimingStat
     {
     }
 
-    void add(BaseData data)
+    void add(TimingData data)
     {
-        TimingData tData = (TimingData) data;
-
-        for (TimingPiece piece : tData.iterator()) {
+        for (TimingPiece piece : data.iterator()) {
             if (!titles.contains(piece.getTitle())) {
                 titles.add(piece.getTitle());
             }
@@ -133,12 +191,18 @@ class TimingStat
         super.add(data);
     }
 
-    public void checkDataType(BaseData data)
+    private TimeSeries[] generateSeries(SectionKey key, String name,
+                                        PlotArguments pargs)
+        throws StatPlotException
     {
-        if (!(data instanceof TimingData)) {
-            throw new ClassCastException("Expected TimingData, not " +
-                                         data.getClass().getName());
+        final String prefix = pargs.getSeriesPrefix(key, name);
+
+        TimeSeries[] series = new TimeSeries[titles.size()];
+        for (int i = 0; i < series.length; i++) {
+            series[i] = new TimeSeries(prefix + titles.get(i), Second.class);
         }
+
+        return series;
     }
 
     double getValue(TimingPiece piece)
@@ -148,17 +212,14 @@ class TimingStat
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, SectionKey key,
                                      String name, PlotArguments pargs)
+        throws StatPlotException
     {
-        final String prefix = pargs.getPrefix(key, name);
-
-        TimeSeries[] series = new TimeSeries[titles.size()];
-        for (int i = 0; i < series.length; i++) {
-            series[i] = new TimeSeries(prefix + titles.get(i), Second.class);
-            coll.addSeries(series[i]);
+        TimeSeries series[] = generateSeries(key, name, pargs);
+        for (TimeSeries entry : series) {
+            coll.addSeries(entry);
         }
 
         double[] prevVal = new double[series.length];
-
         for (int i = 0; i < series.length; i++) {
             prevVal[i] = 0;
         }
@@ -193,6 +254,7 @@ class TimingStat
     public TimeSeriesCollection plotDelta(TimeSeriesCollection coll,
                                           SectionKey key, String name,
                                           PlotArguments pargs)
+        throws StatPlotException
     {
         return plot(coll, key, name, pargs);
     }
@@ -200,13 +262,11 @@ class TimingStat
     public TimeSeriesCollection plotScaled(TimeSeriesCollection coll,
                                            SectionKey key, String name,
                                            PlotArguments pargs)
+        throws StatPlotException
     {
-        final String prefix = pargs.getPrefix(key, name);
-
-        TimeSeries[] series = new TimeSeries[titles.size()];
-        for (int i = 0; i < series.length; i++) {
-            series[i] = new TimeSeries(prefix + titles.get(i), Second.class);
-            coll.addSeries(series[i]);
+        TimeSeries series[] = generateSeries(key, name, pargs);
+        for (TimeSeries entry : series) {
+            coll.addSeries(entry);
         }
 
         double[] prevVal = new double[series.length];
@@ -278,71 +338,6 @@ class TimingStat
         }
 
         return coll;
-    }
-
-    public static final boolean save(StatData statData, String sectionName,
-                                     ChartTime time, String line)
-        throws StatParseException
-    {
-        return save(statData, null, sectionName, time, line, false);
-    }
-
-    public static final boolean save(StatData statData, String sectionHost,
-                                     String sectionName, ChartTime time,
-                                     String line, boolean ignore)
-        throws StatParseException
-    {
-        Matcher matcher = STAT_PAT.matcher(line);
-        if (!matcher.find()) {
-            return false;
-        }
-
-        String dataStr = matcher.group(2);
-        if (dataStr.equals("NOT RUNNING")) {
-            return true;
-        }
-
-        String name = matcher.group(1);
-
-        ArrayList<TimingPiece> timing = null;
-
-        int startPos = 0;
-        while (true) {
-            matcher = PIECE_PAT.matcher(dataStr);
-            if (!matcher.find(startPos)) {
-                break;
-            }
-
-            final String title = matcher.group(1);
-            final String cTime = matcher.group(2);
-            final String num = matcher.group(3);
-
-            TimingPiece data;
-            try {
-                data = new TimingPiece(title, cTime, num);
-            } catch (StatParseException pex) {
-                LOG.error("Couldn't parse timing piece", pex);
-                continue;
-            }
-
-            if (timing == null) {
-                timing = new ArrayList<TimingPiece>();
-            }
-            timing.add(data);
-
-            startPos = matcher.end();
-        }
-
-        if (timing == null) {
-            return false;
-        }
-
-        if (!ignore) {
-            statData.add(sectionHost, sectionName, name,
-                         new TimingData(time, timing));
-        }
-
-        return true;
     }
 
     public boolean showLegend()

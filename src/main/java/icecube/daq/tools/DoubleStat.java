@@ -1,5 +1,7 @@
 package icecube.daq.tools;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -42,30 +44,71 @@ class DoubleData
     }
 }
 
+class DoubleParser
+    extends BaseStatParser
+{
+    private static final Pattern STAT_PAT =
+        Pattern.compile("^(\\s+([^\\s:]+):?|\\s*(.+)\\s*:)\\s+([\\-\\+]?" +
+                        "\\d+\\.?\\d*)\\s*$");
+
+    Map<String, BaseData> parseLine(ChartTime time, String line,
+                                    boolean verbose)
+        throws StatParseException
+    {
+        Matcher matcher = STAT_PAT.matcher(line);
+        if (!matcher.find()) {
+            return null;
+        }
+
+        final double val;
+        try {
+            val = Double.parseDouble(matcher.group(4));
+        } catch (NumberFormatException nfe) {
+            throw new StatParseException("Bad number \"" + matcher.group(4) +
+                                         "\" in \"" + line + "\"");
+        }
+
+        String name = matcher.group(2);
+        if (name == null) {
+            name = matcher.group(3);
+            if (name == null) {
+                throw new StatParseException("No name found in \"" + line +
+                                             "\"");
+            }
+        }
+
+        DoubleData data = new DoubleData(time, val);
+
+        Map<String, BaseData> map = new HashMap<String, BaseData>();
+        map.put(name, data);
+        return map;
+    }
+}
+
 class DoubleStat
-    extends StatParent
+    extends StatParent<DoubleData>
 {
     private static final Logger LOG = Logger.getLogger(DoubleStat.class);
 
-    private static final Pattern STAT_PAT =
-        Pattern.compile(
-            "^(\\s+([^\\s:]+):?|\\s*(.+)\\s*:)\\s+([\\-\\+]?\\d+\\.?\\d*)\\s*$");
-
-    public void checkDataType(BaseData data)
+    private TimeSeries[] generateSeries(SectionKey key, String name,
+                                        PlotArguments pargs)
+        throws StatPlotException
     {
-        if (!(data instanceof DoubleData)) {
-            throw new ClassCastException("Expected DoubleData, not " +
-                                         data.getClass().getName());
-        }
+        final String seriesName = pargs.getSeriesName(key, name);
+
+        return new TimeSeries[] {
+            new TimeSeries(seriesName, Second.class),
+        };
     }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, SectionKey key,
                                      String name, PlotArguments pargs)
+        throws StatPlotException
     {
-        final String seriesName = pargs.getName(key, name);
-
-        TimeSeries series = new TimeSeries(seriesName, Second.class);
-        coll.addSeries(series);
+        TimeSeries series[] = generateSeries(key, name, pargs);
+        for (TimeSeries entry : series) {
+            coll.addSeries(entry);
+        }
 
         for (BaseData bd : iterator()) {
             DoubleData data = (DoubleData) bd;
@@ -81,19 +124,20 @@ class DoubleStat
             final double val = data.getValue();
 
             try {
-                series.add(seconds, val);
+                series[0].add(seconds, val);
             } catch (Exception exc) {
                 double oldVal;
                 try {
-                    oldVal = (double) series.getDataItem(seconds).getValue();
+                    oldVal =
+                        (double) series[0].getDataItem(seconds).getValue();
                 } catch (Exception ex2) {
                     LOG.error("Cannot get previous value from" + " series \"" +
-                              seriesName + "\"");
+                              pargs.getSeriesName(key, name) + "\"");
                     continue;
                 }
 
                 if (Math.abs(val - oldVal) > 0.2) {
-                    LOG.error("Series \"" + seriesName +
+                    LOG.error("Series \"" + pargs.getSeriesName(key, name) +
                               "\" already contains " + oldVal + " at " +
                               seconds + ", cannot add value " + val);
                     continue;
@@ -107,11 +151,12 @@ class DoubleStat
     public TimeSeriesCollection plotDelta(TimeSeriesCollection coll,
                                           SectionKey key, String name,
                                           PlotArguments pargs)
+        throws StatPlotException
     {
-        final String seriesName = key + " " + name;
-
-        TimeSeries series = new TimeSeries(seriesName, Second.class);
-        coll.addSeries(series);
+        TimeSeries series[] = generateSeries(key, name, pargs);
+        for (TimeSeries entry : series) {
+            coll.addSeries(entry);
+        }
 
         double prevVal = 0;
         boolean firstVal = true;
@@ -139,19 +184,21 @@ class DoubleStat
                 }
 
                 try {
-                    series.add(seconds, deltaVal);
-                } catch (Exception ex) {
+                    series[0].add(seconds, deltaVal);
+                } catch (Exception exc) {
                     double oldVal;
                     try {
-                        oldVal = (long) series.getDataItem(seconds).getValue();
+                        oldVal =
+                            (long) series[0].getDataItem(seconds).getValue();
                     } catch (Exception ex2) {
                         LOG.error("Cannot get previous value from series \"" +
-                                  seriesName + "\"");
+                                  pargs.getSeriesName(key, name) + "\"");
                         continue;
                     }
 
                     if (Math.abs(deltaVal - oldVal) > 0.2) {
-                        LOG.error("Series \"" + seriesName +
+                        LOG.error("Series \"" +
+                                  pargs.getSeriesName(key, name) +
                                   "\" already contains " + oldVal + " at " +
                                   seconds + ", cannot add value " + deltaVal +
                                   " (from " + data.getValue() + ")");
@@ -169,11 +216,12 @@ class DoubleStat
     public TimeSeriesCollection plotScaled(TimeSeriesCollection coll,
                                            SectionKey key, String name,
                                            PlotArguments pargs)
+        throws StatPlotException
     {
-        final String seriesName = key + " " + name;
-
-        TimeSeries series = new TimeSeries(seriesName, Second.class);
-        coll.addSeries(series);
+        TimeSeries series[] = generateSeries(key, name, pargs);
+        for (TimeSeries entry : series) {
+            coll.addSeries(entry);
+        }
 
         double minVal = Double.POSITIVE_INFINITY;
         double maxVal = Double.NEGATIVE_INFINITY;
@@ -205,19 +253,19 @@ class DoubleStat
             double val = (data.getValue() - minVal) / div;
 
             try {
-                series.add(seconds, val);
-            } catch (Exception ex) {
+                series[0].add(seconds, val);
+            } catch (Exception exc) {
                 double oldVal;
                 try {
-                    oldVal = (long) series.getDataItem(seconds).getValue();
+                    oldVal = (long) series[0].getDataItem(seconds).getValue();
                 } catch (Exception ex2) {
                     LOG.error("Cannot get previous value from series \"" +
-                              seriesName + "\"");
+                              pargs.getSeriesName(key, name) + "\"");
                     continue;
                 }
 
                 if (Math.abs(val - oldVal) > 0.2) {
-                    LOG.error("Series \"" + seriesName +
+                    LOG.error("Series \"" + pargs.getSeriesName(key, name) +
                               "\" already contains " + oldVal + " at " +
                               seconds + ", cannot add value " + val +
                               " (from " + data + ")");
@@ -227,52 +275,5 @@ class DoubleStat
         }
 
         return coll;
-    }
-
-    public static final boolean save(StatData statData, String sectionName,
-                                     ChartTime time, String line)
-        throws StatParseException
-    {
-        return save(statData, null, sectionName, time, line, false);
-    }
-
-    public static final boolean save(StatData statData, String sectionHost,
-                                     String sectionName, ChartTime time,
-                                     String line, boolean ignore)
-        throws StatParseException
-    {
-        Matcher matcher = STAT_PAT.matcher(line);
-        if (!matcher.find()) {
-            return false;
-        }
-
-        final double val;
-        try {
-            val = Double.parseDouble(matcher.group(4));
-        } catch (NumberFormatException nfe) {
-            throw new StatParseException("Bad number \"" + matcher.group(4) +
-                                         "\" in \"" + line + "\"");
-        }
-
-        String name = matcher.group(2);
-        if (name == null) {
-            name = matcher.group(3);
-            if (name == null) {
-                throw new StatParseException("No name found in \"" + line +
-                                             "\"");
-            }
-        }
-
-        if (time == null) {
-            throw new StatParseException("Found " + name + " stat " + val +
-                                         " before time was set");
-        }
-
-        if (!ignore) {
-            statData.add(sectionHost, sectionName, name,
-                         new DoubleData(time, val));
-        }
-
-        return true;
     }
 }

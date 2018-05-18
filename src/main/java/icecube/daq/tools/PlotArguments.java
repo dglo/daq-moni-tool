@@ -91,26 +91,14 @@ public class PlotArguments
         return buf.toString();
     }
 
-    public String getName(SectionKey key, String name)
+    public String getSeriesName(SectionKey key, String name)
     {
-/*
-        if (!useLongName) {
-            return name;
-        }
-*/
-
         return buildName(key, name);
     }
 
-    public String getPrefix(SectionKey key, String name)
+    public String getSeriesPrefix(SectionKey key, String name)
     {
-/*
-        if (!useLongName) {
-            return "";
-        }
-*/
-
-        return buildName(key, name) + " ";
+        return getSeriesName(key, name) + " ";
     }
 
     public String getSectionTitle(List<ComponentData> compList)

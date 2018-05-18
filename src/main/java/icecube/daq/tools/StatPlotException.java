@@ -1,24 +1,24 @@
 package icecube.daq.tools;
 
-public class StatParseException
+public class StatPlotException
     extends DAQMoniToolException
 {
-    StatParseException()
+    StatPlotException()
     {
         super();
     }
 
-    StatParseException(String s)
+    StatPlotException(String s)
     {
         super(s);
     }
 
-    StatParseException(Throwable t)
+    StatPlotException(Throwable t)
     {
         super(t);
     }
 
-    StatParseException(String s, Throwable t)
+    StatPlotException(String s, Throwable t)
     {
         super(s, t);
     }

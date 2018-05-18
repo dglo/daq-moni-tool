@@ -1,5 +1,7 @@
 package icecube.daq.tools;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -8,6 +10,15 @@ import org.apache.log4j.Logger;
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+
+class InternalListError
+    extends Error
+{
+    InternalListError(String msg)
+    {
+        super(msg);
+    }
+}
 
 abstract class ListData
     extends BaseData
@@ -18,6 +29,7 @@ abstract class ListData
     }
 
     abstract String getDataString();
+
     abstract int getNumEntries();
 
     StatParent createParent()
@@ -178,49 +190,184 @@ class StringListData
     }
 }
 
-class ListStat
-    extends StatParent
+class ListParser
+    extends BaseStatParser
 {
-    private static final Logger LOG = Logger.getLogger(ListStat.class);
-
     private static final Pattern STAT_PAT =
         Pattern.compile("^\\s+([^\\s:]+):?\\s+\\[(.*)\\]\\s*$");
 
+    private static double[] getDoubleArray(String line, String[] valStrs)
+        throws StatParseException
+    {
+        double[] vals = new double[valStrs.length];
+        for (int i = 0; i < vals.length; i++) {
+            try {
+                vals[i] = Double.parseDouble(valStrs[i]);
+            } catch (NumberFormatException nfe) {
+                throw new StatParseException("Bad double entry #" + i + " \"" +
+                                             valStrs[i] + "\" in \"" + line +
+                                             "\"");
+            }
+        }
+
+        return vals;
+    }
+
+    private static long[] getLongArray(String line, String[] valStrs)
+        throws StatParseException
+    {
+        long[] vals = new long[valStrs.length];
+        for (int i = 0; i < vals.length; i++) {
+            try {
+                vals[i] = Long.parseLong(valStrs[i]);
+            } catch (NumberFormatException nfe) {
+                throw new StatParseException("Bad long entry #" + i + " \"" +
+                                             valStrs[i] + "\" in \"" + line +
+                                             "\"");
+            }
+        }
+
+        return vals;
+    }
+
+    Map<String, BaseData> parseLine(ChartTime time, String line,
+                                    boolean verbose)
+    {
+        Matcher matcher = STAT_PAT.matcher(line);
+        if (!matcher.find()) {
+            return null;
+        }
+
+        final String name = matcher.group(1);
+
+        String[] valStrs = matcher.group(2).split(", ");
+
+        // strip quote marks
+        for (int i = 0; i < valStrs.length; i++) {
+            if (valStrs[i].startsWith("'") && valStrs[i].endsWith("'")) {
+                valStrs[i] = valStrs[i].substring(1, valStrs[i].length() - 1);
+            }
+            if (valStrs[i].endsWith("L")) {
+                valStrs[i] = valStrs[i].substring(0, valStrs[i].length() - 1);
+            }
+        }
+
+        ListData data;
+        if (valStrs.length == 0) {
+            data = new LongListData(time, new long[0]);
+        } else {
+            try {
+                data = new LongListData(time, getLongArray(line, valStrs));
+            } catch (StatParseException spe) {
+                // data is not a long value
+                data = null;
+            }
+
+            if (data == null) {
+                try {
+                    data = new DoubleListData(time, getDoubleArray(line,
+                                                                   valStrs));
+                } catch (StatParseException spe) {
+                    // data is not a double value
+                    data = null;
+                }
+
+                if (data == null) {
+                    data = new StringListData(time, valStrs);
+                }
+            }
+        }
+
+        if (data == null) {
+            return null;
+        }
+
+        Map<String, BaseData> map = new HashMap<String, BaseData>();
+        map.put(name, data);
+        return map;
+    }
+}
+
+class ListStat
+    extends StatParent<ListData>
+{
+    private static final Logger LOG = Logger.getLogger(ListStat.class);
+
+    private static final String[] LOADAVG_FIELDS = {
+        "1 Minute", "5 Minute", "15 Minute",
+    };
+
+    private static final String[] MEMSTAT_FIELDS = {
+        "Used", "Total",
+    };
+
+    private static final String[] EVTDATA_FIELDS = {
+        "Run Number", "Events", "Ticks",
+    };
+
     private int numEntries;
+
+    private String[] fieldNames;
 
     ListStat(int numEntries)
     {
         this.numEntries = numEntries;
     }
 
-    void add(BaseData data)
+    void add(ListData data)
     {
-        ListData sData = (ListData) data;
-        if (sData.getNumEntries() != numEntries) {
-            throw new Error("Expected " + numEntries + " entries, not " +
-                            sData.getNumEntries());
+        if (data.getNumEntries() != numEntries) {
+            throw new InternalListError("Expected " + numEntries +
+                                        " entries, not " +
+                                        data.getNumEntries());
         }
 
         super.add(data);
     }
 
-    public void checkDataType(BaseData data)
+    private TimeSeries[] generateSeries(SectionKey key, String name,
+                                        PlotArguments pargs)
+        throws StatPlotException
     {
-        if (!(data instanceof ListData)) {
-            throw new ClassCastException("Expected ListData, not " +
-                                         data.getClass().getName());
+        final String prefix = pargs.getSeriesPrefix(key, name);
+
+        if (fieldNames == null) {
+            if (name.startsWith("LoadAverage")) {
+                fieldNames = LOADAVG_FIELDS;
+            } else if (name.startsWith("MemoryStatistics")) {
+                fieldNames = MEMSTAT_FIELDS;
+            } else if (name.startsWith("EventData")) {
+                fieldNames = EVTDATA_FIELDS;
+            } else {
+                // generate field names
+                fieldNames = new String[numEntries];
+                for (int idx = 0; idx < fieldNames.length; idx++) {
+                    fieldNames[idx] = String.format(prefix + "List " + idx);
+                }
+            }
+        } else if (fieldNames.length != numEntries) {
+            // number of field names does not match number of entries
+            final String errmsg = "Field name list for " + prefix +
+                " should contain " + numEntries + " entries, not " +
+                fieldNames.length;
+            throw new StatPlotException(errmsg);
         }
+
+        TimeSeries[] series = new TimeSeries[numEntries];
+        for (int idx = 0; idx < series.length; idx++) {
+            series[idx] = new TimeSeries(fieldNames[idx], Second.class);
+        }
+
+        return series;
     }
 
     public TimeSeriesCollection plot(TimeSeriesCollection coll, SectionKey key,
                                      String name, PlotArguments pargs)
+        throws StatPlotException
     {
-        final String prefix = pargs.getPrefix(key, name);
-
-        TimeSeries[] series = new TimeSeries[numEntries];
-        for (int i = 0; i < series.length; i++) {
-            series[i] = new TimeSeries(prefix + "List " + i, Second.class);
-            coll.addSeries(series[i]);
+        TimeSeries series[] = generateSeries(key, name, pargs);
+        for (TimeSeries entry : series) {
+            coll.addSeries(entry);
         }
 
         for (BaseData bd : iterator()) {
@@ -245,13 +392,11 @@ class ListStat
     public TimeSeriesCollection plotDelta(TimeSeriesCollection coll,
                                           SectionKey key, String name,
                                           PlotArguments pargs)
+        throws StatPlotException
     {
-        final String prefix = pargs.getPrefix(key, name);
-
-        TimeSeries[] series = new TimeSeries[numEntries];
-        for (int i = 0; i < series.length; i++) {
-            series[i] = new TimeSeries(prefix + "List " + i, Second.class);
-            coll.addSeries(series[i]);
+        TimeSeries series[] = generateSeries(key, name, pargs);
+        for (TimeSeries entry : series) {
+            coll.addSeries(entry);
         }
 
         double[] prevVal = new double[numEntries];
@@ -287,13 +432,11 @@ class ListStat
     public TimeSeriesCollection plotScaled(TimeSeriesCollection coll,
                                            SectionKey key, String name,
                                            PlotArguments pargs)
+        throws StatPlotException
     {
-        final String prefix = pargs.getPrefix(key, name);
-
-        TimeSeries[] series = new TimeSeries[numEntries];
-        for (int i = 0; i < series.length; i++) {
-            series[i] = new TimeSeries(prefix + "List " + i, Second.class);
-            coll.addSeries(series[i]);
+        TimeSeries series[] = generateSeries(key, name, pargs);
+        for (TimeSeries entry : series) {
+            coll.addSeries(entry);
         }
 
         double minVal = Double.POSITIVE_INFINITY;
@@ -335,106 +478,6 @@ class ListStat
         }
 
         return coll;
-    }
-
-    private static double[] getDoubleArray(String line, String[] valStrs)
-        throws StatParseException
-    {
-        double[] vals = new double[valStrs.length];
-        for (int i = 0; i < vals.length; i++) {
-            try {
-                vals[i] = Double.parseDouble(valStrs[i]);
-            } catch (NumberFormatException nfe) {
-                throw new StatParseException("Bad double entry #" + i + " \"" +
-                                             valStrs[i] + "\" in \"" + line +
-                                             "\"");
-            }
-        }
-
-        return vals;
-    }
-
-    private static long[] getLongArray(String line, String[] valStrs)
-        throws StatParseException
-    {
-        long[] vals = new long[valStrs.length];
-        for (int i = 0; i < vals.length; i++) {
-            try {
-                vals[i] = Long.parseLong(valStrs[i]);
-            } catch (NumberFormatException nfe) {
-                throw new StatParseException("Bad long entry #" + i + " \"" +
-                                             valStrs[i] + "\" in \"" + line +
-                                             "\"");
-            }
-        }
-
-        return vals;
-    }
-
-    public static final boolean save(StatData statData, String sectionHost,
-                                     String sectionName, ChartTime time,
-                                     String line, boolean ignore)
-        throws StatParseException
-    {
-        Matcher matcher = STAT_PAT.matcher(line);
-        if (!matcher.find()) {
-            return false;
-        }
-
-        String name = matcher.group(1);
-
-        if (time == null) {
-            throw new StatParseException("Found " + name +
-                                         " list data before time was set");
-        }
-
-        String[] valStrs = matcher.group(2).split(", ");
-
-        // strip quote marks
-        for (int i = 0; i < valStrs.length; i++) {
-            if (valStrs[i].startsWith("'") && valStrs[i].endsWith("'")) {
-                valStrs[i] = valStrs[i].substring(1, valStrs[i].length() - 1);
-            }
-            if (valStrs[i].endsWith("L")) {
-                valStrs[i] = valStrs[i].substring(0, valStrs[i].length() - 1);
-            }
-        }
-
-        ListData data;
-        if (valStrs.length == 0) {
-            data = new LongListData(time, new long[0]);
-        } else {
-            try {
-                data = new LongListData(time, getLongArray(line, valStrs));
-            } catch (StatParseException spe) {
-                // must not be a long value
-                data = null;
-            }
-
-            if (data == null) {
-                try {
-                    data = new DoubleListData(time, getDoubleArray(line,
-                                                                   valStrs));
-                } catch (StatParseException spe) {
-                    // must be a string value
-                    data = null;
-                }
-            }
-
-            if (data == null) {
-                data = new StringListData(time, valStrs);
-                if (data == null) {
-                    LOG.error("Cannot parse " + name + " list data");
-                    return true;
-                }
-            }
-        }
-
-        if (!ignore) {
-            statData.add(sectionHost, sectionName, name, data);
-        }
-
-        return true;
     }
 
     public boolean showLegend()

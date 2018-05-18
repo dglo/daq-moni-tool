@@ -1,48 +1,49 @@
 package icecube.daq.tools;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import org.jfree.data.time.TimeSeriesCollection;
 
-public abstract class StatParent
+public abstract class StatParent<T>
 {
-    private ArrayList<BaseData> dataList;
+    private List<T> dataList;
 
-    void add(BaseData data)
+    void add(T data)
     {
         if (dataList == null) {
-            dataList = new ArrayList<BaseData>();
+            dataList = new ArrayList<T>();
         }
-
-        checkDataType(data);
 
         dataList.add(data);
     }
-
-    public abstract void checkDataType(BaseData data);
 
     public boolean isEmpty()
     {
         return dataList.size() < 2;
     }
 
-    public Iterable<BaseData> iterator()
+    public Iterable<T> iterator()
     {
         return dataList;
     }
 
     public TimeSeriesCollection plot(SectionKey key, String name,
                                      PlotArguments pargs)
+        throws StatPlotException
     {
         return plot(new TimeSeriesCollection(), key, name, pargs);
     }
 
     public abstract TimeSeriesCollection plot(TimeSeriesCollection coll,
                                               SectionKey key, String name,
-                                              PlotArguments pargs);
+                                              PlotArguments pargs)
+        throws StatPlotException;
 
     public TimeSeriesCollection plotDelta(SectionKey key, String name,
                                           PlotArguments pargs)
+        throws StatPlotException
     {
         return plotDelta(new TimeSeriesCollection(), key, name, pargs);
     }
@@ -50,16 +51,23 @@ public abstract class StatParent
     public abstract TimeSeriesCollection plotDelta(TimeSeriesCollection coll,
                                                    SectionKey key,
                                                    String name,
-                                                   PlotArguments pargs);
+                                                   PlotArguments pargs)
+        throws StatPlotException;
 
     public abstract TimeSeriesCollection plotScaled(TimeSeriesCollection coll,
                                                     SectionKey key,
                                                     String name,
-                                                    PlotArguments pargs);
+                                                    PlotArguments pargs)
+        throws StatPlotException;
 
     public boolean showLegend()
     {
         return false;
+    }
+
+    public Map<String, StatParent> transform(String name)
+    {
+        return null;
     }
 
     public String toString()
