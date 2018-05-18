@@ -1,5 +1,7 @@
 package icecube.daq.tools;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,20 +42,35 @@ class StringData
     }
 }
 
-class StringStat
-    extends StatParent
+class StringParser
+    extends BaseStatParser
 {
     private static final Pattern STAT_PAT =
         Pattern.compile("^\\s+([^\\s:]+):?\\s+(.*)\\s*$");
 
-    public void checkDataType(BaseData data)
+    Map<String, BaseData> parseLine(ChartTime time, String line,
+                                    boolean verbose)
+        throws StatParseException
     {
-        if (!(data instanceof StringData)) {
-            throw new ClassCastException("Expected StringData, not " +
-                                         data.getClass().getName());
+        Matcher matcher = STAT_PAT.matcher(line);
+        if (!matcher.find()) {
+            return null;
         }
-    }
 
+        String name = matcher.group(1);
+        final String val = matcher.group(2);
+
+        StringData data = new StringData(time, val);
+
+        Map<String, BaseData> map = new HashMap<String, BaseData>();
+        map.put(name, data);
+        return map;
+    }
+}
+
+class StringStat
+    extends StatParent<StringData>
+{
     public TimeSeriesCollection plot(TimeSeriesCollection coll, SectionKey key,
                                      String name, PlotArguments pargs)
     {
@@ -75,45 +92,5 @@ class StringStat
     {
         // do nothing
         return coll;
-    }
-
-    public static final boolean save(StatData statData, ChartTime time,
-                                     String line)
-        throws StatParseException
-    {
-        return save(statData, null, time, line);
-    }
-
-    public static final boolean save(StatData statData, String sectionName,
-                                     ChartTime time, String line)
-        throws StatParseException
-    {
-        return save(statData, null, sectionName, time, line, false);
-    }
-
-    public static final boolean save(StatData statData, String sectionHost,
-                                     String sectionName, ChartTime time,
-                                     String line, boolean ignore)
-        throws StatParseException
-    {
-        Matcher matcher = STAT_PAT.matcher(line);
-        if (!matcher.find()) {
-            return false;
-        }
-
-        String name = matcher.group(1);
-        final String val = matcher.group(2);
-
-        if (time == null) {
-            throw new StatParseException("Found " + name + " stat " + val +
-                                         " before time was set");
-        }
-
-        if (!ignore) {
-            statData.add(sectionHost, sectionName, name,
-                         new StringData(time, val));
-        }
-
-        return true;
     }
 }

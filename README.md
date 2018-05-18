@@ -125,3 +125,9 @@ window with two plots, one for each chosen quantity.
 
 Also, each set of plots is drawn in a separate window and you can have multiple
 windows at the same time.
+
+Handling new charts
+-------------------
+New quantities can be charted by extending BaseData and StatParent (or, even
+better, by copying a similar *Stat.java file) to implement the parsing and
+plotting logic, then adding the new Stat.save() method to BaseParser.match()

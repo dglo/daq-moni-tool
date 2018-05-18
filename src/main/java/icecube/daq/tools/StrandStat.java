@@ -1,10 +1,22 @@
 package icecube.daq.tools;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.apache.log4j.Logger;
 
 import org.jfree.data.time.Second;
 import org.jfree.data.time.TimeSeries;
 import org.jfree.data.time.TimeSeriesCollection;
+
+class InternalStrandError
+    extends Error
+{
+    InternalStrandError(String msg)
+    {
+        super(msg);
+    }
+}
 
 class StrandData
     extends BaseData
@@ -53,8 +65,46 @@ class StrandData
     }
 }
 
+class StrandParser
+    extends BaseStatParser
+{
+    Map<String, BaseData> parseLine(ChartTime time, String line,
+                                    boolean verbose)
+        throws StatParseException
+    {
+        String[] flds = line.split("\\s+");
+        if (flds == null || flds.length == 0) {
+            return null;
+        }
+
+        long[] vals = new long[flds.length];
+        for (int i = 0; i < vals.length; i++) {
+            try {
+                vals[i] = Long.parseLong(flds[i]);
+            } catch (NumberFormatException nfe) {
+                throw new StatParseException("Bad strand statistic #" + i +
+                                             " \"" + flds[i] + "\" in \"" +
+                                             line + "\"");
+            }
+        }
+
+        final String name = "Strand Depths";
+
+        if (time == null) {
+            throw new StatParseException("Found " + name +
+                                         " stat before time was set");
+        }
+
+        StrandData data = new StrandData(time, vals);
+
+        Map<String, BaseData> map = new HashMap<String, BaseData>();
+        map.put(name, data);
+        return map;
+    }
+}
+
 class StrandStat
-    extends StatParent
+    extends StatParent<StrandData>
 {
     private static final Logger LOG = Logger.getLogger(StrandStat.class);
 
@@ -65,34 +115,38 @@ class StrandStat
         this.numStrands = numStrands;
     }
 
-    void add(BaseData data)
+    void add(StrandData data)
     {
-        StrandData sData = (StrandData) data;
-        if (sData.getNumStrands() != numStrands) {
-            throw new Error("Expected " + numStrands + " strands, not " +
-                            sData.getNumStrands());
+        if (data.getNumStrands() != numStrands) {
+            throw new InternalStrandError("Expected " + numStrands +
+                                          " strands, not " +
+                                          data.getNumStrands());
         }
 
         super.add(data);
     }
 
-    public void checkDataType(BaseData data)
+    private TimeSeries[] generateSeries(SectionKey key, String name,
+                                        PlotArguments pargs)
+        throws StatPlotException
     {
-        if (!(data instanceof StrandData)) {
-            throw new ClassCastException("Expected StrandData, not " +
-                                         data.getClass().getName());
-        }
-    }
-
-    public TimeSeriesCollection plot(TimeSeriesCollection coll, SectionKey key,
-                                     String name, PlotArguments pargs)
-    {
-        final String prefix = pargs.getPrefix(key, name);
+        final String prefix = pargs.getSeriesPrefix(key, name);
 
         TimeSeries[] series = new TimeSeries[numStrands];
         for (int i = 0; i < series.length; i++) {
             series[i] = new TimeSeries(prefix + "Strand " + i, Second.class);
-            coll.addSeries(series[i]);
+        }
+
+        return series;
+    }
+
+    public TimeSeriesCollection plot(TimeSeriesCollection coll, SectionKey key,
+                                     String name, PlotArguments pargs)
+        throws StatPlotException
+    {
+        TimeSeries series[] = generateSeries(key, name, pargs);
+        for (TimeSeries entry : series) {
+            coll.addSeries(entry);
         }
 
         for (BaseData bd : iterator()) {
@@ -117,13 +171,11 @@ class StrandStat
     public TimeSeriesCollection plotDelta(TimeSeriesCollection coll,
                                           SectionKey key, String name,
                                           PlotArguments pargs)
+        throws StatPlotException
     {
-        final String prefix = pargs.getPrefix(key, name);
-
-        TimeSeries[] series = new TimeSeries[numStrands];
-        for (int i = 0; i < series.length; i++) {
-            series[i] = new TimeSeries(prefix + "Strand " + i, Second.class);
-            coll.addSeries(series[i]);
+        TimeSeries series[] = generateSeries(key, name, pargs);
+        for (TimeSeries entry : series) {
+            coll.addSeries(entry);
         }
 
         long[] prevVal = new long[numStrands];
@@ -159,13 +211,11 @@ class StrandStat
     public TimeSeriesCollection plotScaled(TimeSeriesCollection coll,
                                            SectionKey key, String name,
                                            PlotArguments pargs)
+        throws StatPlotException
     {
-        final String prefix = pargs.getPrefix(key, name);
-
-        TimeSeries[] series = new TimeSeries[numStrands];
-        for (int i = 0; i < series.length; i++) {
-            series[i] = new TimeSeries(prefix + "Strand " + i, Second.class);
-            coll.addSeries(series[i]);
+        TimeSeries series[] = generateSeries(key, name, pargs);
+        for (TimeSeries entry : series) {
+            coll.addSeries(entry);
         }
 
         long minVal = Long.MAX_VALUE;
@@ -207,47 +257,6 @@ class StrandStat
         }
 
         return coll;
-    }
-
-    public static final boolean save(StatData statData, String sectionHost,
-                                     String sectionName, ChartTime time,
-                                     String line, boolean ignore)
-        throws StatParseException
-    {
-        String[] flds = line.split("\\s+");
-        if (flds == null || flds.length == 0) {
-            return false;
-        }
-
-        long[] vals = new long[flds.length];
-        for (int i = 0; i < vals.length; i++) {
-            try {
-                vals[i] = Long.parseLong(flds[i]);
-            } catch (NumberFormatException nfe) {
-                throw new StatParseException("Bad strand statistic #" + i +
-                                             " \"" + flds[i] + "\" in \"" +
-                                             line + "\"");
-            }
-        }
-
-        final String name = "Strand Depths";
-
-        if (time == null) {
-            throw new StatParseException("Found " + name +
-                                         " stat before time was set");
-        }
-
-        if (!ignore) {
-            try {
-                statData.add(sectionHost, sectionName, name,
-                             new StrandData(time, vals));
-            } catch (Error err) {
-                LOG.error("Bad strands for " + sectionHost + "/" +
-                          sectionName + "/" + name + " " + time, err);
-            }
-        }
-
-        return true;
     }
 
     public boolean showLegend()

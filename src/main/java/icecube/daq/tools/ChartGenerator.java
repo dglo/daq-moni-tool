@@ -13,6 +13,8 @@ import java.util.TimeZone;
 
 import javax.swing.JPanel;
 
+import org.apache.log4j.Logger;
+
 import org.jfree.chart.ChartPanel;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.DateAxis;
@@ -33,6 +35,8 @@ import org.jfree.data.xy.XYDataset;
 
 public class ChartGenerator
 {
+    private static final Logger LOG = Logger.getLogger(ChartGenerator.class);
+
     private String title;
     private ArrayList<JFreeChart> chartList = new ArrayList<JFreeChart>();
 
@@ -300,11 +304,18 @@ public class ChartGenerator
                             chartName = name;
                         }
 
-                        if (choices.getType() == ChartType.SCALED) {
-                            stat.plotScaled(coll, bean.getSectionKey(), name,
-                                            pargs);
-                        } else {
-                            stat.plot(coll, bean.getSectionKey(), name, pargs);
+                        try {
+                            if (choices.getType() == ChartType.SCALED) {
+                                stat.plotScaled(coll, bean.getSectionKey(),
+                                                name, pargs);
+                            } else {
+                                stat.plot(coll, bean.getSectionKey(), name,
+                                          pargs);
+                            }
+                        } catch (StatPlotException spe) {
+                            LOG.error("Cannot plot " + bean.getSectionKey() +
+                                      ": " + name, spe);
+                            continue;
                         }
                         numCharted++;
                     }
@@ -376,12 +387,18 @@ public class ChartGenerator
                             statData.getStatistics(bean.getSectionKey(), name);
 
                         TimeSeriesCollection coll;
-                        if (!delta) {
-                            coll =
-                                stat.plot(bean.getSectionKey(), name, pargs);
-                        } else {
-                            coll = stat.plotDelta(bean.getSectionKey(), name,
-                                                  pargs);
+                        try {
+                            if (!delta) {
+                                coll = stat.plot(bean.getSectionKey(), name,
+                                                 pargs);
+                            } else {
+                                coll = stat.plotDelta(bean.getSectionKey(),
+                                                      name, pargs);
+                            }
+                        } catch (StatPlotException spe) {
+                            LOG.error("Cannot plot " + bean.getSectionKey() +
+                                      ": " + name, spe);
+                            continue;
                         }
 
                         boolean showLegend =
@@ -398,7 +415,8 @@ public class ChartGenerator
                             deltaStr = "Delta ";
                         }
 
-                        chartName = pargs.getName(bean.getSectionKey(), name);
+                        chartName = pargs.getSeriesName(bean.getSectionKey(),
+                                                        name);
 
                         addChart(chartName, coll, showLegend,
                                  choices.showPoints(), choices.getType());

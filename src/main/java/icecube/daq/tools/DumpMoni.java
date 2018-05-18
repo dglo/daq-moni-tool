@@ -16,15 +16,8 @@ public class DumpMoni
         StatData statData = new StatData();
 
         for (File f : fileList) {
-            try {
-                statData.addData(new GraphSource(f), false, false);
-            } catch (IOException ioe) {
-                System.err.println("Couldn't load \"" + f + "\":");
-                ioe.printStackTrace();
-                continue;
-            }
-
             System.out.println(f + ":");
+            statData.loadFile(f, false, false);
         }
 
         dump(statData, System.out);
@@ -43,7 +36,7 @@ public class DumpMoni
 
     private void dump(StatData data, PrintStream out)
     {
-        for (SectionKey key : data.getSections()) {
+        for (SectionKey key : data.getSectionKeys()) {
             for (String name : data.getSectionNames(key)) {
                 StatParent stats = data.getStatistics(key, name);
                 out.println(key + " " + name + " " + stats);
