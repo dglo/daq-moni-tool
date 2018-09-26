@@ -70,6 +70,7 @@ public abstract class StatParent<T>
         return null;
     }
 
+    @Override
     public String toString()
     {
         return (dataList == null ? "null" : dataList.toString());

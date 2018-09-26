@@ -28,6 +28,7 @@ class ChartTime
         return time;
     }
 
+    @Override
     public String toString()
     {
         return Long.toString(time);

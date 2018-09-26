@@ -42,6 +42,7 @@ class GraphSource
         return new BufferedReader(rdr);
     }
 
+    @Override
     public String toString()
     {
         if (file != null) {

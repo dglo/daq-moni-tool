@@ -41,6 +41,7 @@ public class SectionKey
         }
     }
 
+    @Override
     public int compareTo(Object obj)
     {
         if (obj == null) {
@@ -60,6 +61,7 @@ public class SectionKey
         return val;
     }
 
+    @Override
     public boolean equals(Object obj)
     {
         return compareTo(obj) == 0;
@@ -85,12 +87,14 @@ public class SectionKey
         return section;
     }
 
+    @Override
     public int hashCode()
     {
         return (host.hashCode() & 0xffff) << 16 +
             (section.hashCode() & 0xffff);
     }
 
+    @Override
     public String toString()
     {
         return host + ":" + section;

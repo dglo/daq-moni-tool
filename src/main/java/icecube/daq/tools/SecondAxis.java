@@ -266,6 +266,7 @@ class SecondTickUnit
      *
      * @return The formatted date.
      */
+    @Override
     public String valueToString(double milliseconds)
     {
         long secs = (long) milliseconds / 1000;
@@ -341,6 +342,7 @@ class SecondAxis
          *
          * @return The timeline value.
          */
+        @Override
         public long toTimelineValue(long millisecond)
         {
             return millisecond;
@@ -366,6 +368,7 @@ class SecondAxis
          *
          * @return The millisecond.
          */
+        @Override
         public long toMillisecond(long value)
         {
             return value;
@@ -379,6 +382,7 @@ class SecondAxis
          *
          * @return <code>true</code>.
          */
+        @Override
         public boolean containsDomainValue(long millisecond)
         {
             return true;
@@ -392,6 +396,7 @@ class SecondAxis
          *
          * @return <code>true</code>.
          */
+        @Override
         public boolean containsDomainValue(Date date)
         {
             return true;
@@ -406,6 +411,7 @@ class SecondAxis
          *
          * @return <code>true</code>.
          */
+        @Override
         public boolean containsDomainRange(long from, long to)
         {
             return true;
@@ -432,6 +438,7 @@ class SecondAxis
          *
          * @return A boolean.
          */
+        @Override
         public boolean equals(Object object)
         {
             if (object == null) {
@@ -651,6 +658,7 @@ class SecondAxis
      * @param lower  the lower bound for the axis.
      * @param upper  the upper bound for the axis.
      */
+    @Override
     public void setRange(double lower, double upper)
     {
         if (lower >= upper) {
@@ -1250,6 +1258,7 @@ class SecondAxis
     /**
      * Rescales the axis to ensure that all data is visible.
      */
+    @Override
     protected void autoAdjustRange()
     {
 
@@ -1757,6 +1766,7 @@ class SecondAxis
      * @param lowerPercent  the new lower bound.
      * @param upperPercent  the new upper bound.
      */
+    @Override
     public void zoomRange(double lowerPercent, double upperPercent)
     {
         double start =
@@ -1787,6 +1797,7 @@ class SecondAxis
      *
      * @return A boolean.
      */
+    @Override
     public boolean equals(Object obj)
     {
         if (obj == this) {
@@ -1820,6 +1831,7 @@ class SecondAxis
      *
      * @return A hash code.
      */
+    @Override
     public int hashCode()
     {
         if (getLabel() != null) {
@@ -1837,6 +1849,7 @@ class SecondAxis
      * @throws CloneNotSupportedException if some component of the axis does
      *         not support cloning.
      */
+    @Override
     public Object clone()
         throws CloneNotSupportedException
     {

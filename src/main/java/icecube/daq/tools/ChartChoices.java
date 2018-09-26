@@ -56,6 +56,7 @@ public class ChartChoices
         return showPoints;
     }
 
+    @Override
     public String toString()
     {
         StringBuilder buf = new StringBuilder("ChartChoices[");

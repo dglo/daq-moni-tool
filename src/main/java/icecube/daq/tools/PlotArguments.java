@@ -191,6 +191,7 @@ public class PlotArguments
         return secTitle.toString();
     }
 
+    @Override
     public String toString()
     {
         return String.format("PlotArguments[UseLong %s," +

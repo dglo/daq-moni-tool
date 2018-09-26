@@ -57,6 +57,7 @@ class TimingPiece
         }
     }
 
+    @Override
     public String toString()
     {
         return title + "=" + time + "/" + calls;
@@ -75,11 +76,13 @@ class TimingData
         this.list = list;
     }
 
+    @Override
     StatParent createParent()
     {
         return new TimingStat();
     }
 
+    @Override
     public String getDataString()
     {
         StringBuilder buf = new StringBuilder();
@@ -100,6 +103,7 @@ class TimingData
         return list;
     }
 
+    @Override
     boolean isEmpty()
     {
         return false;
@@ -180,6 +184,7 @@ class TimingStat
     {
     }
 
+    @Override
     void add(TimingData data)
     {
         for (TimingPiece piece : data.iterator()) {
@@ -340,6 +345,7 @@ class TimingStat
         return coll;
     }
 
+    @Override
     public boolean showLegend()
     {
         return true;

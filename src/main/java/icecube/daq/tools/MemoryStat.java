@@ -30,11 +30,13 @@ class MemoryData
         this.freeMem = freeMem;
     }
 
+    @Override
     StatParent createParent()
     {
         return new MemoryStat();
     }
 
+    @Override
     String getDataString()
     {
         return Long.toString(usedMem) + " used, " + freeMem + " free";
@@ -50,6 +52,7 @@ class MemoryData
         return usedMem;
     }
 
+    @Override
     boolean isEmpty()
     {
         return usedMem == 0L && freeMem == 0L;
@@ -321,6 +324,7 @@ class MemoryStat
         return coll;
     }
 
+    @Override
     public boolean showLegend()
     {
         return true;

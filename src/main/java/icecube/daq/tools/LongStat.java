@@ -23,11 +23,13 @@ class LongData
         this.val = val;
     }
 
+    @Override
     StatParent createParent()
     {
         return new LongStat();
     }
 
+    @Override
     String getDataString()
     {
         return Long.toString(val);
@@ -38,6 +40,7 @@ class LongData
         return val;
     }
 
+    @Override
     boolean isEmpty()
     {
         return val == 0L;

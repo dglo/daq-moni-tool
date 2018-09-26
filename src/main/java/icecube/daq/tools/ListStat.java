@@ -28,10 +28,12 @@ abstract class ListData
         super(time);
     }
 
+    @Override
     abstract String getDataString();
 
     abstract int getNumEntries();
 
+    @Override
     StatParent createParent()
     {
         return new ListStat(getNumEntries());
@@ -52,6 +54,7 @@ class DoubleListData
         this.vals = vals;
     }
 
+    @Override
     public String getDataString()
     {
         StringBuilder buf = new StringBuilder();
@@ -70,16 +73,19 @@ class DoubleListData
         return vals[i];
     }
 
+    @Override
     int getNumEntries()
     {
         return vals.length;
     }
 
+    @Override
     double getRawValue(int i)
     {
         return vals[i];
     }
 
+    @Override
     boolean isEmpty()
     {
         return vals == null || (vals.length == 1 && vals[0] == 0.0);
@@ -98,6 +104,7 @@ class LongListData
         this.vals = vals;
     }
 
+    @Override
     public String getDataString()
     {
         StringBuilder buf = new StringBuilder();
@@ -116,16 +123,19 @@ class LongListData
         return vals[i];
     }
 
+    @Override
     int getNumEntries()
     {
         return vals.length;
     }
 
+    @Override
     double getRawValue(int i)
     {
         return (double) vals[i];
     }
 
+    @Override
     boolean isEmpty()
     {
         if (vals == null || vals.length == 0) {
@@ -156,6 +166,7 @@ class StringListData
         this.vals = vals;
     }
 
+    @Override
     public String getDataString()
     {
         StringBuilder buf = new StringBuilder();
@@ -174,16 +185,19 @@ class StringListData
         return vals[i];
     }
 
+    @Override
     int getNumEntries()
     {
         return vals.length;
     }
 
+    @Override
     double getRawValue(int i)
     {
         return 0.0;
     }
 
+    @Override
     boolean isEmpty()
     {
         return vals == null || (vals.length == 1 && vals[0] == null);
@@ -314,6 +328,7 @@ class ListStat
         this.numEntries = numEntries;
     }
 
+    @Override
     void add(ListData data)
     {
         if (data.getNumEntries() != numEntries) {
@@ -480,6 +495,7 @@ class ListStat
         return coll;
     }
 
+    @Override
     public boolean showLegend()
     {
         return true;

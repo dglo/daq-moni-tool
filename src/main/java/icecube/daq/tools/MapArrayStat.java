@@ -32,6 +32,7 @@ abstract class MapArrayData
 
     abstract void addToSeries(TimeSeries series, Second seconds, int index);
 
+    @Override
     String getDataString()
     {
         return toString();
@@ -60,6 +61,7 @@ abstract class MapArrayData
         return false;
     }
 
+    @Override
     boolean isEmpty()
     {
         return false;
@@ -72,6 +74,7 @@ abstract class MapArrayData
 
     abstract int length();
 
+    @Override
     public String toString()
     {
         StringBuilder buf = new StringBuilder("[");
@@ -116,6 +119,7 @@ class DoubleArrayData
         series.add(seconds, array[index]);
     }
 
+    @Override
     StatParent createParent()
     {
         return new MapArrayStat();
@@ -129,20 +133,24 @@ class DoubleArrayData
         return total;
     }
 
+    @Override
     double getValueDouble(int index) {
         return array[index];
     }
 
+    @Override
     String getValueString(int index)
     {
         return Double.toString(array[index]);
     }
 
+    @Override
     boolean isDouble()
     {
         return true;
     }
 
+    @Override
     int length()
     {
         return array.length;
@@ -179,6 +187,7 @@ class LongArrayData
         series.add(seconds, array[index]);
     }
 
+    @Override
     StatParent createParent()
     {
         return new MapArrayStat();
@@ -192,20 +201,24 @@ class LongArrayData
         return total;
     }
 
+    @Override
     long getValueLong(int index) {
         return array[index];
     }
 
+    @Override
     String getValueString(int index)
     {
         return Long.toString(array[index]);
     }
 
+    @Override
     boolean isLong()
     {
         return true;
     }
 
+    @Override
     int length()
     {
         return array.length;
@@ -445,11 +458,13 @@ class MapArrayStat
         throw new Error("Unimplemented");
     }
 
+    @Override
     public boolean showLegend()
     {
         return true;
     }
 
+    @Override
     public Map<String, StatParent> transform(String name)
     {
         final String cpuStatsName = "CPUStatistics";
