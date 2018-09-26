@@ -30,6 +30,11 @@ class MemoryData
         this.freeMem = freeMem;
     }
 
+    StatParent createParent()
+    {
+        return new MemoryStat();
+    }
+
     String getDataString()
     {
         return Long.toString(usedMem) + " used, " + freeMem + " free";
@@ -38,11 +43,6 @@ class MemoryData
     long getFreeMemory()
     {
         return freeMem;
-    }
-
-    StatParent createParent()
-    {
-        return new MemoryStat();
     }
 
     long getUsedMemory()

@@ -56,7 +56,6 @@ public class ChartChoices
         return showPoints;
     }
 
-
     public String toString()
     {
         StringBuilder buf = new StringBuilder("ChartChoices[");

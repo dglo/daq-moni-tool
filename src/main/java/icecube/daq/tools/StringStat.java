@@ -21,14 +21,14 @@ class StringData
         this.val = val;
     }
 
-    String getDataString()
-    {
-        return "\"" + val + "\"";
-    }
-
     StatParent createParent()
     {
         return new StringStat();
+    }
+
+    String getDataString()
+    {
+        return "\"" + val + "\"";
     }
 
     String getValue()

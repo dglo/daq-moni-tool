@@ -121,7 +121,7 @@ class SecondTickUnit
      *
      * @return The formatted date.
      */
-    public String dateToString(Date date) 
+    public String dateToString(Date date)
     {
         long milliseconds = date.getTime();
         long secs = milliseconds / 1000;
@@ -199,7 +199,7 @@ class SecondTickUnit
      *
      * @return The number of milliseconds.
      */
-    private static long getMillisecondCount(int unit, int count) 
+    private static long getMillisecondCount(int unit, int count)
     {
 
         switch (unit) {
@@ -768,7 +768,7 @@ class SecondAxis
      *
      * @return A value.
      */
-    public boolean isHiddenValue(long millis) 
+    public boolean isHiddenValue(long millis)
     {
         return (!this.timeline.containsDomainValue(new Date(millis)));
     }
@@ -1047,7 +1047,7 @@ class SecondAxis
             calendar.set(value, months, days, 0, 0, 0);
             return calendar.getTime();
 
-        default: 
+        default:
             return null;
 
         }
@@ -1256,7 +1256,7 @@ class SecondAxis
         Plot plot = getPlot();
 
         if (plot == null) {
-            return; 
+            return;
         }
 
         if (plot instanceof ValueAxisPlot) {
@@ -1628,7 +1628,7 @@ class SecondAxis
                                                     this.tickMarkPosition);
                 break;
 
-            default: 
+            default:
                 break;
 
             }
