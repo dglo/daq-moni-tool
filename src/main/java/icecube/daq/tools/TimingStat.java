@@ -75,6 +75,11 @@ class TimingData
         this.list = list;
     }
 
+    StatParent createParent()
+    {
+        return new TimingStat();
+    }
+
     public String getDataString()
     {
         StringBuilder buf = new StringBuilder();
@@ -88,11 +93,6 @@ class TimingData
         }
 
         return buf.toString();
-    }
-
-    StatParent createParent()
-    {
-        return new TimingStat();
     }
 
     Iterable<TimingPiece> iterator()

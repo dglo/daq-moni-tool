@@ -23,14 +23,14 @@ class DoubleData
         this.val = val;
     }
 
-    String getDataString()
-    {
-        return Double.toString(val);
-    }
-
     StatParent createParent()
     {
         return new DoubleStat();
+    }
+
+    String getDataString()
+    {
+        return Double.toString(val);
     }
 
     double getValue()

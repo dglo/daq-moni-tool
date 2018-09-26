@@ -30,6 +30,11 @@ class StrandData
         this.depths = vals;
     }
 
+    StatParent createParent()
+    {
+        return new StrandStat(depths.length);
+    }
+
     public String getDataString()
     {
         StringBuilder buf = new StringBuilder();
@@ -46,11 +51,6 @@ class StrandData
     int getNumStrands()
     {
         return depths.length;
-    }
-
-    StatParent createParent()
-    {
-        return new StrandStat(depths.length);
     }
 
     long getStrand(int i)

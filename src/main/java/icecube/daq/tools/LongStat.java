@@ -23,14 +23,14 @@ class LongData
         this.val = val;
     }
 
-    String getDataString()
-    {
-        return Long.toString(val);
-    }
-
     StatParent createParent()
     {
         return new LongStat();
+    }
+
+    String getDataString()
+    {
+        return Long.toString(val);
     }
 
     long getValue()
