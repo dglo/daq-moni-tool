@@ -21,11 +21,13 @@ class StringData
         this.val = val;
     }
 
+    @Override
     StatParent createParent()
     {
         return new StringStat();
     }
 
+    @Override
     String getDataString()
     {
         return "\"" + val + "\"";
@@ -36,6 +38,7 @@ class StringData
         return val;
     }
 
+    @Override
     boolean isEmpty()
     {
         return val == null || val.length() == 0;

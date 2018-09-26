@@ -30,11 +30,13 @@ class StrandData
         this.depths = vals;
     }
 
+    @Override
     StatParent createParent()
     {
         return new StrandStat(depths.length);
     }
 
+    @Override
     public String getDataString()
     {
         StringBuilder buf = new StringBuilder();
@@ -58,6 +60,7 @@ class StrandData
         return depths[i];
     }
 
+    @Override
     boolean isEmpty()
     {
         return depths == null || depths.length == 0 ||
@@ -115,6 +118,7 @@ class StrandStat
         this.numStrands = numStrands;
     }
 
+    @Override
     void add(StrandData data)
     {
         if (data.getNumStrands() != numStrands) {
@@ -259,6 +263,7 @@ class StrandStat
         return coll;
     }
 
+    @Override
     public boolean showLegend()
     {
         return true;

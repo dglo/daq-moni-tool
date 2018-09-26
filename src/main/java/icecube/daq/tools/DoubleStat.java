@@ -23,11 +23,13 @@ class DoubleData
         this.val = val;
     }
 
+    @Override
     StatParent createParent()
     {
         return new DoubleStat();
     }
 
+    @Override
     String getDataString()
     {
         return Double.toString(val);
@@ -38,6 +40,7 @@ class DoubleData
         return val;
     }
 
+    @Override
     boolean isEmpty()
     {
         return val == 0.0;

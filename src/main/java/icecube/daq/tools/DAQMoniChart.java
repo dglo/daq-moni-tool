@@ -127,6 +127,7 @@ class InstanceBean
         return itemNames.size();
     }
 
+    @Override
     public String toString()
     {
         return name;
@@ -395,6 +396,7 @@ class IncAllCheckBox
         }
     }
 
+    @Override
     public void itemStateChanged(ItemEvent evt)
     {
         if (evt.getStateChange() == ItemEvent.SELECTED) {
@@ -430,6 +432,7 @@ class NameCheckBox
         incAllBox.setSelected(false);
     }
 
+    @Override
     public void itemStateChanged(ItemEvent evt)
     {
         if (evt.getStateChange() == ItemEvent.SELECTED) {
@@ -460,6 +463,7 @@ class TemplateCheckBox
         this.ckboxList = ckboxList;
     }
 
+    @Override
     public void itemStateChanged(ItemEvent evt)
     {
         for (JCheckBox ckbox : ckboxList) {
