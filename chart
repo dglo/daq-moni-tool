@@ -34,7 +34,7 @@ def find_pdaq_trunk():
     raise DirectoryNotFoundException("Cannot find pDAQ trunk (PDAQ_HOME)")
 
 sys.path.append(os.path.join(find_pdaq_trunk(), "dash"))
-from RunJava import runJava
+from RunJava import run_java
 
 
 PDAQ_LOG_DIR = "/mnt/data/pdaq/log/"
@@ -93,7 +93,7 @@ def chart(args):
         ("log4j", "log4j", "1.0.19"),
     ]
 
-    runJava(app, ["-mx6000m"], appArgs, daqProjects, mavenDeps, debug=True)
+    run_java(app, ["-mx6000m"], appArgs, daqProjects, mavenDeps, debug=True)
 
 
 if __name__ == "__main__":
