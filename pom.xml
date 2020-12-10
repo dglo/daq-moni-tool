@@ -19,15 +19,6 @@
     <url>http://code.icecube.wisc.edu/daq/projects/${project.name}</url>
   </scm>
 
-  <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
-  </build>
-
   <!-- Dependencies for this project.  These should not contain
   versions.  The versions needed should be specified in the top-level
   pom's dependencyManagement -->
